@@ -1,0 +1,90 @@
+amateur
+arena
+athletic
+backboard
+backhand
+badminton
+baseball
+basketball
+beach volleyball
+bench 
+boxing
+billiards
+catcher 
+champion
+championship
+coach 
+competitive
+defense
+doubles 
+dribble 
+dugout
+fan
+field goal
+finish line
+football
+forehand
+free throw
+futsal
+goal
+goal line
+goalkeeper
+goalpost
+guard
+grand slam
+gymnastics
+half time 
+hat trick
+hockey
+inning 
+jiu jitsu
+judo
+jump shot 
+karate
+kickoff
+kickboxing
+lay up 
+league
+locker room
+offense 
+opponent
+outfield
+penalty
+pitcher 
+preseason
+puck 
+quarterback
+recreational
+referee
+rugby
+score 
+scoreboard
+semifinal
+serve
+singles 
+snooker
+soccer
+softball
+sportscaster
+sportmanship
+stadium
+strike 
+squash
+swimming
+teammate
+tennis
+court
+taekwondo
+tie 
+time-out
+touchdown
+tournament
+track and field
+trainer
+trophy
+umpire
+underdog 
+volleyball
+water polo
+wushu
+weightlifting

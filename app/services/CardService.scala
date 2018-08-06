@@ -1,9 +1,11 @@
 package services
+import exceptions.InvalidInput
 import javax.inject.Inject
 import models._
 import models.Enums.CardType
 import org.slf4j
 import org.slf4j.LoggerFactory
+
 import scala.collection.immutable
 import models.Enums.CardType.CardType
 
@@ -29,8 +31,7 @@ class CardService @Inject()(risk: Risk, discount: Discount, buyLetter: BuyLetter
             case _ =>
                 if (cardName.isDefined) {
                     logger.error("Invalid card name to use.")
-                    throw new Error(s"Given card name: $cardName is invalid. Use: risk,discount,buy,category,consolation.")
-                    None
+                    throw new InvalidInput(s"Given card name: $cardName is invalid. Use: risk,discount,buy,category,consolation.")
                 }
                 else None
         }

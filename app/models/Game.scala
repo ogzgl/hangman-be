@@ -1,20 +1,22 @@
 package models
 
-import models.Enums.{CardType, GameState, MoveType}
+import exceptions._
 import models.Enums.CardType.CardType
+import models.Enums.{CardType,GameState,MoveType}
 import org.slf4j
 import org.slf4j.LoggerFactory
 
-import scala.collection.{immutable, mutable}
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.{immutable,mutable}
 
 class Game(
             val word: Word,
             currentCards: immutable.HashMap[ CardType,Cards ],
             alphabetCost: immutable.HashMap[ Char,Int ]
           ) {
-    private val remainingLetters: mutable.HashMap[ Char,Int ] = mutable.HashMap[ Char,Int ]('e' -> 1,'a' -> 1,'r' -> 1,'i' -> 1,'o' -> 1,'t' -> 1,'n' -> 1,'s' -> 1,'l' -> 1,'c' -> 1,'u' -> 1,'d' -> 1,'p' -> 1,'m' -> 1,'h' -> 1,'g' -> 1,'b' -> 1,'f' -> 1,'w' -> 1,'y' -> 1,'k' -> 1,'v' -> 1,'x' -> 1,'z' -> 1,'j' -> 1,'q' -> 1)
+
     val moveList: ArrayBuffer[ Move ] = ArrayBuffer(new Move(None,None,None))
+    private val remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
     var userPoint: Int = 100
     var gameState: Enums.GameState.Value = Enums.GameState.CONTINUE
 
@@ -24,46 +26,27 @@ class Game(
     //returns the state of the game.
     def stateOfGame: Enums.GameState.GameState = gameState
 
-    //just returns the available letters which can be used.
-    def notUsedLetters(): String = {
-        var letterList = ""
-        for (elem <- remainingLetters.toSeq.sortBy(_._1)) {
-            if (elem._2 == 1) letterList += (elem._1 + " ")
-        }
-        letterList
-    }
-
-
     // Make a move function takes the input from interaction class,
     // creates the move object
     // forwards it to preCheck.
     def makeAMove(letter: Option[ Char ],card: Option[ Cards ],position: Option[ Int ]): Unit = {
         val newMove = new Move(letter,card,position)
         preCheck(newMove)
+        moveSeparator(newMove)
     }
 
     //preCheck runs validations on the given input. Such as if the card is usable, or letter is usable
     // or checks if the given letter input actually a letter.
     private def preCheck(move: Move): Unit = {
         if (move.selectedCard.isDefined) {
-            if (!isCardUsable(move.selectedCard.get)) {
-                logger.info(word.hiddenWord)
-            }
-            else moveSeparator(move)
+            isCardUsable(move.selectedCard.get)
         }
-        else if (move.guessedLetter.isDefined) {
-            if (!isLetterUsable(move.guessedLetter.get))
-                logger.info(word.hiddenWord)
-            else moveSeparator(move)
+        if (move.guessedLetter.isDefined) {
+            isLetterUsable(move.guessedLetter.get)
         }
-        else if (move.selectedPosition.isDefined) {
-            if (move.selectedPosition.get > word.word.length || move.selectedPosition.get < 0) {
-                logger.error("Given position is out of range.")
-                throw new Error(s"Position range can not be smaller than 0 and can not be larger that ${word.word.length}")
-            }
-            else moveSeparator(move)
+        if (move.selectedPosition.isDefined) {
+            isPositionUsable(move.selectedPosition.get)
         }
-        else moveSeparator(move)
     }
 
     //moveSeparator, according to match result of the moveType,
@@ -76,7 +59,7 @@ class Game(
             case MoveType.LETTERCARD => processLetterCard(move)
             case _ =>
                 logger.error("Invalid, you can't do these combinations on input.")
-                throw new Error("Invalid input combination.")
+                throw new InvalidInput("Invalid input combination you can not make choice with all three or none of them.")
         }
     }
 
@@ -97,31 +80,26 @@ class Game(
             if (isCardUsable(move.selectedCard.get)) {
                 logger.info(word.category)
                 currentCards(CardType.REVEALCATEGORY).usageLimit -= 1
-                move.updateSuccess(false)
+                move.updateSuccess(true)
                 postProcess(move)
             }
         }
         else {
             logger.error("This card can not be used standalone.")
-            throw new Error(s"${move.selectedCard.get.cardType.toString} can not be used standalone.")
+            throw new InvalidInput(s"${move.selectedCard.get.cardType.toString} can not be used standalone.")
         }
     }
 
     private def processCardPos(move: Move): Unit = {
         if (move.selectedCard.get.cardType equals CardType.BUYLETTER)
-            if (isCardUsable(move.selectedCard.get))
-                if (word.isPositionHidden(move.selectedPosition.get)) {
-                    word.usePos(move.selectedPosition.get)
-                    move.updateSuccess(false)
-                    postProcess(move)
-                }
-                else {
-                    logger.error("Given posision was revealed before.")
-                    throw new Error("Position is already revealed.")
-                }
+            if (isCardUsable(move.selectedCard.get)) {
+                word.usePos(move.selectedPosition.get)
+                move.updateSuccess(true)
+                postProcess(move)
+            }
             else {
                 logger.error("This card can not be used with position.")
-                throw new Error("This card can not be used with position.")
+                throw new InvalidInput(s"This card: ${move.selectedCard.get.cardType} can not be used with position")
             }
     }
 
@@ -142,20 +120,15 @@ class Game(
         }
         else {
             logger.info(s"${move.selectedCard.get.cardType.toString} usage with letter")
-            throw new Error(s"This ${move.selectedCard.get.cardType.toString} can not be used with letter")
+            throw new InvalidInput(s"This ${move.selectedCard.get.cardType.toString} can not be used with letter")
         }
     }
 
     //postProcess makes updates on userPoint, card usage limit and the gameState.
     private def postProcess(move: Move): Unit = {
-        if (!move.isSuccess) userPoint -= moveCostCalc(move)
-        else {
-            if (move.selectedCard.isDefined) {
-                userPoint -= currentCards(move.selectedCard.get.cardType).cost
-            }
-        }
+        userPoint -= moveCostCalc(move)
         if (move.moveType == MoveType.LETTERCARD || move.moveType == MoveType.ONLYLETTER) {
-            remainingLetters(move.guessedLetter.get) = 0
+            remainingLetters += move.guessedLetter.get
         }
         if (move.selectedCard.isDefined)
             currentCards(move.selectedCard.get.cardType).usageLimit -= 1
@@ -182,7 +155,7 @@ class Game(
                 case MoveType.ONLYLETTER => moveCost = alphabetCost(move.guessedLetter.get)
                 case _ =>
                     logger.error("Unexpected Error!")
-                    throw new Error("Move cost calculation for invalid move.")
+                    throw new InvalidInput("Unexpected Error: Move cost calculation for invalid move.")
 
             }
             moveCost
@@ -212,25 +185,33 @@ class Game(
     //  + is user has enough points to use that letter?
     //  + is letter actually a letter?
     private def isLetterUsable(letter: Char): Boolean = {
-        if (remainingLetters(letter) > 0)
+        if (!remainingLetters.contains(letter))
             if (userPoint > alphabetCost(letter))
                 if (letter.isLetter)
                     true
                 else {
                     logger.error("Given input was not letter use A-Z")
-                    throw new Error(s"Given input $letter is not a A-Z letter.")
-                    false
+                    throw new InvalidInput(s"Given input $letter is not a A-Z letter.")
                 }
             else {
                 logger.error(s"Insufficient points to use letter: $letter.")
-                throw new Error("Insufficient points to use letter: ${letter}.")
-                false
+                throw new InsufficientPoints("Insufficient points to use letter: ${letter}.")
             }
         else {
             logger.error(s"Usage of letter : $letter which used before.")
-            throw new Error(s"This letter: $letter already used.")
-            false
+            throw new AlreadyUsedLetter(s"This letter: $letter already used.")
         }
+    }
+
+    private def isPositionUsable(pos: Int): Boolean = {
+        if (pos < word.word.length || pos > 0) {
+            if (word.isPositionHidden(pos))
+                true
+            else throw new PositionAlreadyRevealed(s"Given position $pos was already revealed.")
+        }
+        else throw new PositionOutOfRange(s"Position can not be smaller than 0 or can not be larger then word length: ${word.word.length}")
+
+
     }
 
     //helper function, checks if card is usable, conditions that
@@ -246,18 +227,15 @@ class Game(
                     true
                 else {
                     logger.error(s"Try to use ${card.cardType.toString} which reached its limit.")
-                    throw new Error("Card's usage limit exceeded.")
-                    false
+                    throw new CardUsageReached("Card's usage limit exceeded.")
                 }
             else {
                 logger.error(s"Try to use a card while there is an active ${temp._2.toString} card")
-                throw new Error(s"There is enabled ${temp._2} card you can't make this move.")
-                false
+                throw new EnabledCardExists(s"There is enabled ${temp._2} card you can't make this move.")
             }
         else {
             logger.error(s"Insufficient point to use card: ${card.cardType.toString}")
-            throw new Error("Insufficient points to use card.")
-            false
+            throw new InsufficientPoints("Insufficient points to use card.")
         }
     }
 

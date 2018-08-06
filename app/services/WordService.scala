@@ -7,7 +7,7 @@ import repos.WordRepo
 import scala.util.Random
 
 @Singleton
-class WordService @Inject()(wr: WordRepo, word: Word) {
+class WordService @Inject()(wr: WordRepo) {
 
     def getRandWord(level: Enums.LevelEnum.LevelEnum): Word = {
         val rand = Random

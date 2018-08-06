@@ -14,7 +14,7 @@ import scala.io.Source
 
 
 @Singleton
-class WordRepo @Inject()(word: Word) {
+class WordRepo() {
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ WordRepo ])
     val wordList: Map[ Enums.LevelEnum.Value,ArrayBuffer[ Word ] ] = initializeWordList()
 
@@ -25,7 +25,7 @@ class WordRepo @Inject()(word: Word) {
             LevelEnum.HARD -> ArrayBuffer()
         )
         try {
-            val path = "../app/services/hangman_words"
+            val path = "/home/mandos/projects/hf_playhangman/app/repos/hangman_words"
             println(path)
             val filesHere = new java.io.File(path).listFiles
             for (file <- filesHere) processFile(file,words)

@@ -41,7 +41,7 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                 )
                 logger.info(s"Game started successfully with $gameLevel level.")
                 logger.info("Word is: " + currentGame.word)
-                responseInfo()
+                moveResponse()
             }
             catch {
                 case x: Throwable =>
@@ -56,22 +56,24 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         alphabetCost
     }
 
-    def makeMove(moveCarrier: MoveCarrier): MoveResponse = {
+    def makeMove(moveCarrier: MoveCarrier): Either[MoveResponse, GameResponse]= {
         try {
             if(!currentGame.isInstanceOf[Game]) throw new gameNotCreatedYet("Game is not created, create a game.")
             if (currentGame.stateOfGame == GameState.WON){
                 logger.info(s"Game Won with ${currentGame.userPoint} points.")
-                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points.")
+                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game to continue.")
             }
             else if (currentGame.stateOfGame == GameState.LOST){
                 logger.info("Game Lost.")
-                throw new moveForFinishedGame("You Lost")
+                throw new moveForFinishedGame("You Lost. Create new game to continue.")
             }
             else {
                 currentGame.makeAMove(moveCarrier.getAsChar,cardService.getOneCard(moveCarrier.selectedCard),moveCarrier.pos)
+                if(currentGame.gameState != GameState.CONTINUE)
+                    Right(gameResponse())
+                else Left(moveResponse())
             }
 
-            responseInfo()
         }
         catch {
             case exc : Exception =>
@@ -85,15 +87,22 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
     }
 
     //    private def creationResponse()
-    def responseInfo(): MoveResponse = {
-        val currentMoveResponse: MoveResponse = MoveResponse(
-            currentGame.userPoint,
-            currentGame.word.hiddenWord,
-            currentGame.word.hiddenCategory,
-            currentGame.gameState.toString,
-            if (currentGame.moveList.last.isSuccess) "correct"
-            else "incorrect"
-        )
-        currentMoveResponse
+    def moveResponse(): MoveResponse = {
+            val currentMoveResponse: MoveResponse = MoveResponse(
+                currentGame.userPoint,
+                currentGame.word.hiddenWord,
+                currentGame.word.hiddenCategory,
+                currentGame.gameState.toString,
+                if (currentGame.moveList.last.isSuccess) "correct"
+                else "incorrect"
+            )
+            currentMoveResponse
+    }
+
+    def gameResponse() : GameResponse = {
+        var msg : String = ""
+        if(currentGame.gameState equals GameState.LOST) msg ="You lost"
+        else msg = "You won the game"
+        GameResponse(msg, currentGame.gameState.toString)
     }
 }

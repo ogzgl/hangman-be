@@ -15,7 +15,9 @@ class Game(
             alphabetCost: immutable.HashMap[ Char,Int ]
           ) {
     val currentCards : mutable.HashMap[CardType.CardType, Int] = mutable.HashMap[CardType.CardType, Int]()
-    val moveList: ArrayBuffer[ Move ] = ArrayBuffer(new Move(None,None,None))
+    val startingMove : Move = new Move(None,None,None)
+    startingMove.success = true
+    val moveList: ArrayBuffer[ Move ] = ArrayBuffer(startingMove)
     private val remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
     var userPoint: Int = 100
     var gameState: Enums.GameState.Value = Enums.GameState.CONTINUE
@@ -36,6 +38,7 @@ class Game(
     // creates the move object
     // forwards it to preCheck.
     def makeAMove(letter: Option[ Char ],card: Option[ Cards ],position: Option[ Int ]): Unit = {
+
         val newMove = new Move(letter,card,position)
         preCheck(newMove)
         moveSeparator(newMove)
@@ -65,7 +68,7 @@ class Game(
             case MoveType.LETTERCARD => processLetterCard(move)
             case _ =>
                 logger.error("Invalid, you can't do these combinations on input.")
-                throw new InvalidInput("Invalid input combination you can not make choice with all three or none of them.")
+                throw new InvalidInput("Invalid input combination you can not make choice with all three or none of them or only position.")
         }
     }
 
@@ -157,11 +160,13 @@ class Game(
                 case MoveType.CARDPOS => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                 case MoveType.LETTERCARD =>
                     if (move.selectedCard.get.cardType equals CardType.DISCOUNT) {
-                        moveCost = currentCardsParam(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get) / 4
+                        moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
+                        if(!move.isSuccess)  moveCost += alphabetCost(move.guessedLetter.get) / 4
                     }
-                    else moveCost = currentCardsParam(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get)
+                    else moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
+                    if(!move.isSuccess)  moveCost+=alphabetCost(move.guessedLetter.get)
                 case MoveType.ONLYCARD => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
-                case MoveType.ONLYLETTER => moveCost = alphabetCost(move.guessedLetter.get)
+                case MoveType.ONLYLETTER => if(!move.isSuccess) moveCost = alphabetCost(move.guessedLetter.get) else moveCost=0
                 case _ =>
                     logger.error("Unexpected Error!")
                     throw new InvalidInput("Unexpected Error: Move cost calculation for invalid move.")
@@ -173,7 +178,9 @@ class Game(
                 moveCost = 0
             }
             if (lastCard._2.get == CardType.CONSOLATION) {
-                moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
+                if(!move.isSuccess)
+                    moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
+                else moveCost = 0
             }
             moveCost
         }
@@ -192,17 +199,12 @@ class Game(
     //  + is letter actually a letter?
     private def isLetterUsable(letter: Char): Boolean = {
         if (!remainingLetters.contains(letter))
-                if (userPoint > alphabetCost(letter))
-                    if (letter.isLetter)
-                        true
-                    else {
-                        logger.error("Given input was not letter use A-Z")
-                        throw new InvalidInput(s"Given input $letter is not a A-Z letter.")
-                    }
-                else {
-                    logger.error(s"Insufficient points to use letter: $letter.")
-                    throw new InsufficientPoints("Insufficient points to use letter: ${letter}.")
-                }
+            if (letter.isLetter)
+                true
+            else {
+                logger.error("Given input was not letter use A-Z")
+                throw new InvalidInput(s"Given input $letter is not a A-Z letter.")
+            }
         else {
             logger.error(s"Usage of letter : $letter which used before.")
             throw new AlreadyUsedLetter(s"This letter: $letter already used.")

@@ -4,13 +4,8 @@
 # ~~~~
 
 GET    /                           controllers.GameCreationController.greeting
-
 POST   /                           controllers.GameCreationController.createGame
 
-GET    /play                       controllers.GameController.hiddenWord
+GET    /play                       controllers.GameController.getRequestHandler
 POST   /play                       controllers.GameController.makeMove
-
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
-
       

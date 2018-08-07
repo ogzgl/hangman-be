@@ -1,7 +1,8 @@
 package services
 
 import com.google.inject
-import exceptions.InvalidInput
+import controllers.MoveCarrier
+import exceptions.{InvalidInput, gameNotCreatedYet, moveForFinishedGame}
 import javax.inject.Inject
 import models.Enums.GameState
 import models.{Enums, Game}
@@ -10,12 +11,13 @@ import org.slf4j.LoggerFactory
 import play.api.Configuration
 
 import scala.collection.immutable
+
 @inject.Singleton
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ GameService ])
     var currentGame: Game = _
 
-    def initializeGame(level: String): Unit = {
+    def initializeGame(level: String): MoveResponse = {
         val gameLevel: Enums.LevelEnum.Value = {
             level.toUpperCase() match {
                 case "EASY" => Enums.LevelEnum.EASY
@@ -39,11 +41,12 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                 )
                 logger.info(s"Game started successfully with $gameLevel level.")
                 logger.info("Word is: " + currentGame.word)
+                responseInfo()
             }
             catch {
                 case x: Throwable =>
                     logger.error(x.getMessage)
-                    throw new InvalidInput("Invalid level.")
+                    throw new InvalidInput("Given Input was not valid, use: easy, medium or hard.")
             }
         }
     }
@@ -53,37 +56,42 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         alphabetCost
     }
 
-    def makeMove(letter: Option[ Char ],card: Option[ String ],position: Option[ Int ]): MoveResponse = {
+    def makeMove(moveCarrier: MoveCarrier): MoveResponse = {
         try {
-            if (currentGame.isInstanceOf[ Game ] && currentGame.stateOfGame == GameState.CONTINUE) {
-                if (currentGame.stateOfGame == GameState.CONTINUE) currentGame.makeAMove(letter,cardService.getOneCard(card),position)
-                if (currentGame.stateOfGame == GameState.WON)
-                    logger.info(s"Game Won with ${currentGame.userPoint} points.")
-                else if (currentGame.stateOfGame == GameState.LOST)
-                    logger.info("Game Lost.")
-                else logger.info(s"Game continues with ${currentGame.userPoint}")
+            if(!currentGame.isInstanceOf[Game]) throw new gameNotCreatedYet("Game is not created, create a game.")
+            if (currentGame.stateOfGame == GameState.WON){
+                logger.info(s"Game Won with ${currentGame.userPoint} points.")
+                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points.")
             }
+            else if (currentGame.stateOfGame == GameState.LOST){
+                logger.info("Game Lost.")
+                throw new moveForFinishedGame("You Lost")
+            }
+            else {
+                currentGame.makeAMove(moveCarrier.getAsChar,cardService.getOneCard(moveCarrier.selectedCard),moveCarrier.pos)
+            }
+
             responseInfo()
         }
         catch {
+            case exc : Exception =>
+                logger.error(s"Exception occured.${exc.toString}")
+                throw exc
             case x: Throwable =>
                 logger.error(s"Error occurred: ${x.toString}")
-                println("cause : " + x.getCause)
-                println(x.getLocalizedMessage)
-                println(x.printStackTrace())
                 throw new Error(s"Error : ${x.toString}")
 
         }
     }
 
-
-    private def responseInfo(): MoveResponse={
+    //    private def creationResponse()
+    def responseInfo(): MoveResponse = {
         val currentMoveResponse: MoveResponse = MoveResponse(
             currentGame.userPoint,
             currentGame.word.hiddenWord,
             currentGame.word.hiddenCategory,
             currentGame.gameState.toString,
-            if(currentGame.moveList.last.isSuccess) "correct"
+            if (currentGame.moveList.last.isSuccess) "correct"
             else "incorrect"
         )
         currentMoveResponse

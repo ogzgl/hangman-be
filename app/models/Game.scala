@@ -11,10 +11,10 @@ import scala.collection.{immutable,mutable}
 
 class Game(
             val word: Word,
-            currentCards: immutable.HashMap[ CardType,Cards ],
+            currentCardsParam: immutable.HashMap[ CardType,Cards ],
             alphabetCost: immutable.HashMap[ Char,Int ]
           ) {
-
+    val currentCards : mutable.HashMap[CardType.CardType, Int] = mutable.HashMap[CardType.CardType, Int]()
     val moveList: ArrayBuffer[ Move ] = ArrayBuffer(new Move(None,None,None))
     private val remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
     var userPoint: Int = 100
@@ -22,6 +22,12 @@ class Game(
 
     def logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ Game ])
 
+    createUsableAlphabetCost(currentCardsParam)
+    def createUsableAlphabetCost(ac : immutable.HashMap[ CardType,Cards ]): Unit = {
+        for(elem <- ac){
+            currentCards.put(elem._1,elem._2.usageLimit)
+        }
+    }
 
     //returns the state of the game.
     def stateOfGame: Enums.GameState.GameState = gameState
@@ -78,8 +84,9 @@ class Game(
     private def processOnlyCard(move: Move): Unit = {
         if (move.selectedCard.get.cardType equals CardType.REVEALCATEGORY) {
             if (isCardUsable(move.selectedCard.get)) {
-                logger.info(word.category)
-                currentCards(CardType.REVEALCATEGORY).usageLimit -= 1
+                logger.info("Category card is used.")
+                word.hiddenCategory = word.category
+                currentCards(CardType.REVEALCATEGORY) -= 1
                 move.updateSuccess(true)
                 postProcess(move)
             }
@@ -130,8 +137,10 @@ class Game(
         if (move.moveType == MoveType.LETTERCARD || move.moveType == MoveType.ONLYLETTER) {
             remainingLetters += move.guessedLetter.get
         }
-        if (move.selectedCard.isDefined)
-            currentCards(move.selectedCard.get.cardType).usageLimit -= 1
+        if (move.selectedCard.isDefined){
+            logger.error(move.selectedCard.get.cardType.toString)
+            currentCards(move.selectedCard.get.cardType) -= 1
+        }
         logger.info(s"Remaining user points: $userPoint")
         logger.info(s"Secret Word: ${word.hiddenWord}")
         moveList.append(move)
@@ -145,26 +154,23 @@ class Game(
         var moveCost = 0
         if (!lastCard._1) {
             move.moveType match {
-                case MoveType.CARDPOS => moveCost = currentCards(move.selectedCard.get.cardType).cost
+                case MoveType.CARDPOS => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                 case MoveType.LETTERCARD =>
                     if (move.selectedCard.get.cardType equals CardType.DISCOUNT) {
-                        moveCost = currentCards(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get) / 4
+                        moveCost = currentCardsParam(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get) / 4
                     }
-                    else moveCost = currentCards(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get)
-                case MoveType.ONLYCARD => moveCost = currentCards(move.selectedCard.get.cardType).cost
+                    else moveCost = currentCardsParam(move.selectedCard.get.cardType).cost + alphabetCost(move.guessedLetter.get)
+                case MoveType.ONLYCARD => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                 case MoveType.ONLYLETTER => moveCost = alphabetCost(move.guessedLetter.get)
                 case _ =>
                     logger.error("Unexpected Error!")
                     throw new InvalidInput("Unexpected Error: Move cost calculation for invalid move.")
-
             }
             moveCost
-
         }
         else {
             if (lastCard._2.get == CardType.RISK) {
                 moveCost = 0
-
             }
             if (lastCard._2.get == CardType.CONSOLATION) {
                 moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
@@ -186,17 +192,17 @@ class Game(
     //  + is letter actually a letter?
     private def isLetterUsable(letter: Char): Boolean = {
         if (!remainingLetters.contains(letter))
-            if (userPoint > alphabetCost(letter))
-                if (letter.isLetter)
-                    true
+                if (userPoint > alphabetCost(letter))
+                    if (letter.isLetter)
+                        true
+                    else {
+                        logger.error("Given input was not letter use A-Z")
+                        throw new InvalidInput(s"Given input $letter is not a A-Z letter.")
+                    }
                 else {
-                    logger.error("Given input was not letter use A-Z")
-                    throw new InvalidInput(s"Given input $letter is not a A-Z letter.")
+                    logger.error(s"Insufficient points to use letter: $letter.")
+                    throw new InsufficientPoints("Insufficient points to use letter: ${letter}.")
                 }
-            else {
-                logger.error(s"Insufficient points to use letter: $letter.")
-                throw new InsufficientPoints("Insufficient points to use letter: ${letter}.")
-            }
         else {
             logger.error(s"Usage of letter : $letter which used before.")
             throw new AlreadyUsedLetter(s"This letter: $letter already used.")
@@ -222,13 +228,14 @@ class Game(
     private def isCardUsable(card: Cards): Boolean = {
         val temp = lastCardCheck
         if (card.isCardAffordable(userPoint))
-            if (temp._1 equals false)
-                if (currentCards(card.cardType).usageLimit > 0)
+            if (temp._1 equals false){
+                if (currentCards(card.cardType) > 0)
                     true
                 else {
                     logger.error(s"Try to use ${card.cardType.toString} which reached its limit.")
                     throw new CardUsageReached("Card's usage limit exceeded.")
                 }
+            }
             else {
                 logger.error(s"Try to use a card while there is an active ${temp._2.toString} card")
                 throw new EnabledCardExists(s"There is enabled ${temp._2} card you can't make this move.")
@@ -253,5 +260,4 @@ class Game(
         }
         else (false,None)
     }
-
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 class Word(val word: String,val category: String) {
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ Word ])
     var hiddenWord: String = word.replaceAll("[a-z]","*")
+    var hiddenCategory: String = "*" * 10
 
     def updateHiddenWord(guessedLetter: Char): Boolean = {
         val temp = hiddenWord.toCharArray

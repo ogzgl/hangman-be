@@ -1,6 +1,6 @@
 package services
 import exceptions.InvalidInput
-import javax.inject.Inject
+import javax.inject._
 import models._
 import models.Enums.CardType
 import org.slf4j
@@ -11,7 +11,7 @@ import models.Enums.CardType.CardType
 
 class CardService @Inject()(risk: Risk, discount: Discount, buyLetter: BuyLetter, revealCategory: RevealCategory,consolation: Consolation){
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[CardService])
-    def getCards: immutable.HashMap[ CardType, Cards ] ={
+    def getCards: immutable.HashMap[ CardType, Cards ] = {
         val currentCards: immutable.HashMap[ CardType,Cards ] = immutable.HashMap[ CardType, Cards ](
         CardType.DISCOUNT -> discount,
         CardType.BUYLETTER -> buyLetter,
@@ -23,11 +23,11 @@ class CardService @Inject()(risk: Risk, discount: Discount, buyLetter: BuyLetter
     }
     def getOneCard(cardName:  Option[String]): Option[Cards] ={
         cardName match {
-            case Some("risk") => Some(risk)
-            case Some("discount") => Some(discount)
-            case Some("buy") => Some(buyLetter)
-            case Some("category") => Some(revealCategory)
-            case Some("consolation") => Some(consolation)
+            case Some("risk") => Some(risk.asInstanceOf[Risk])
+            case Some("discount") => Some(discount.asInstanceOf[Discount])
+            case Some("buy") => Some(buyLetter.asInstanceOf[BuyLetter])
+            case Some("category") => Some(revealCategory.asInstanceOf[RevealCategory])
+            case Some("consolation") => Some(consolation.asInstanceOf[Consolation])
             case _ =>
                 if (cardName.isDefined) {
                     logger.error("Invalid card name to use.")

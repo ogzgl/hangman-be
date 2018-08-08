@@ -1,10 +1,8 @@
 package models
 
-import org.slf4j
-import org.slf4j.LoggerFactory
+import play.api.Logger
 
 class Word(val word: String,val category: String) {
-    val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ Word ])
     var hiddenWord: String = word.replaceAll("[a-z]","*")
     var hiddenCategory: String = "*" * 10
 
@@ -14,11 +12,11 @@ class Word(val word: String,val category: String) {
             if (word(i) == guessedLetter)
                 temp(i) = word(i)
         if (hiddenWord equals new String(temp)) {
-            logger.info(s"Incorrect guess with $guessedLetter.")
+            Logger.info(s"Incorrect guess with $guessedLetter.")
             false
         }
         else {
-            logger.info(s"Correct guess with $guessedLetter")
+            Logger.info(s"Correct guess with $guessedLetter")
             hiddenWord = new String(temp)
             true
         }

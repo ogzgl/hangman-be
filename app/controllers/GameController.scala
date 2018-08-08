@@ -1,56 +1,18 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import org.slf4j
-import org.slf4j.LoggerFactory
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
+import jsonhandlers.{GameResponse, MoveCarrier, MoveResponse}
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
-import services.{GameResponse, GameService, MoveResponse}
-//case class object that is carried through game service and game. it holds guessed letter selected card, and position
-// for json in request.
-// TODO Move this class to a dedicated package and object.
-case class MoveCarrier(guessedLetter: Option[ String ],selectedCard: Option[ String ],pos: Option[ Int ]) {
-    var temp: Option[ Char ] = None
-
-    def getAsChar: Option[ Char ] = {
-        if (guessedLetter.isDefined)
-            temp = Some(guessedLetter.get.charAt(0))
-        temp
-    }
-}
+import services.GameService
 
 @Singleton
 class GameController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
-    val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ GameController ])
-
-    // TODO Move the json readers/writers to a dedicated package and object.
-    //writes for move response, move response is for response json it holds necessary information.
-    implicit val moveWrites: Writes[ MoveResponse ] = (
-      (JsPath \ "userPoint").write[ Int ] and
-        (JsPath \ "hiddenWord").write[ String ] and
-        (JsPath \ "category").write[ String ] and
-        (JsPath \ "gameState").write[ String ] and
-        (JsPath \ "isSuccess").write[ String ]
-      ) (unlift(MoveResponse.unapply))
-    //writes for game response, work at the end of the game, response json that holds necessary information.
-    implicit val gameWrites: Writes[ GameResponse ] = (
-      (JsPath \ "info").write[ String ] and
-        (JsPath \ "state").write[ String ]
-      ) (unlift(GameResponse.unapply))
-    //reads for move carrier.
-    implicit val moveReads: Reads[ MoveCarrier ] = (
-      (JsPath \ "letter").readNullable[ String ](maxLength[ String ](1) keepAnd minLength[ String ](1)) and
-        (JsPath \ "card").readNullable[ String ] and
-        (JsPath \ "pos").readNullable[ Int ]
-      ) (MoveCarrier.apply _)
-
     // in case of get method to /play url it just returns the last response message.
     def getRequestHandler = Action {
         Ok(Json.toJson(gameService.moveResponse()))
     }
-
     //make move function tries to create a move carrier object and validates it.
     // if it is suitable, passes it to game service.
     // if not, or there is an exception during the move. returns the necessary response message.
@@ -58,20 +20,13 @@ class GameController @Inject()(cc: ControllerComponents,gameService: GameService
         val tempMove = request.body.validate[ MoveCarrier ]
         tempMove.fold(
             errors => {
-                // TODO: Why are you checking whether the game has been created here?
-                if(gameService.isGameCreated){
-                    logger.error(errors.toString())
-                    NotAcceptable(Json.obj(
-                        "status" -> "KO","message" ->
-                          Json.toJson("Given input was not valid:" +
-                            "use 1 letter for guess, use risk, discount, buy,category,consolation for cards, " +
-                            "use integer for position.")))
-                }
-                else{
-                    ExpectationFailed(Json.obj(
-                        "status" -> "KO",
-                        "message" -> Json.toJson("Game is not created, create a game.")))
-                }
+                Logger.error(errors.toString())
+                NotAcceptable(Json.obj(
+                    "status" -> "KO","message" ->
+                      Json.toJson("Given input was not valid:" +
+                        "use 1 letter for guess, use risk, discount, buy,category,consolation for cards, " +
+                        "use integer for position.")))
+
             },
             move => {
                 try {

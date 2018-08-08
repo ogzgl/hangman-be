@@ -2,12 +2,13 @@ package controllers
 
 import exceptions.InvalidInput
 import javax.inject._
+import jsonhandlers.{LevelOfGame, MoveResponse}
+import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
-import services.{GameService, MoveResponse}
+import services.GameService
 
-case class LevelOfGame(level: String)
 
 @Singleton
 class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
@@ -29,6 +30,7 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
         val levelResult = request.body.validate[ LevelOfGame ]
         levelResult.fold(
             errors => {
+                Logger.error("Try to game create with an invalid input.")
                 NotAcceptable(Json.obj("status" -> "KO","message" ->
                   Json.toJson("Given Input was not valid. Use: easy, medium, hard.")))
             },

@@ -1,19 +1,17 @@
 package services
 
-import controllers.MoveCarrier
 import exceptions.{InvalidInput, gameNotCreatedYet, moveForFinishedGame}
 import javax.inject._
+import jsonhandlers.{GameResponse, MoveCarrier, MoveResponse}
 import models.Enums.GameState
 import models.{Enums, Game}
-import org.slf4j
-import org.slf4j.LoggerFactory
+import play.api.Logger
 import play.api.Configuration
 
 import scala.collection.immutable
 
 @Singleton
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
-    val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ GameService ])
     var currentGame: Game = _
 
     def initializeGame(level: String): MoveResponse = {
@@ -23,12 +21,12 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                 case "MEDIUM" => Enums.LevelEnum.MEDIUM
                 case "HARD" => Enums.LevelEnum.HARD
                 case x =>
-                    logger.error(x)
+                    Logger.error(x)
                     Enums.LevelEnum.INVALID
             }
         }
         if (gameLevel == Enums.LevelEnum.INVALID) {
-            logger.error("Creation of game with an invalid input.")
+            Logger.error("Creation of game with an invalid input.")
             throw new InvalidInput("Creation of game with an invalid input.")
         }
         else {
@@ -38,13 +36,13 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                     cardService.getCards,
                     buildAlphabetCost
                 )
-                logger.info(s"Game started successfully with $gameLevel level.")
-                logger.info("Word is: " + currentGame.word)
+                Logger.info(s"Game started successfully with $gameLevel level.")
+                Logger.info("Word is: " + currentGame.word)
                 moveResponse()
             }
             catch {
                 case x: Throwable =>
-                    logger.error(x.getMessage)
+                    Logger.error(x.getMessage)
                     throw new InvalidInput("Given Input was not valid, use: easy, medium or hard.")
             }
         }
@@ -63,12 +61,12 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
             if(currentGame.isInstanceOf[Game] equals false) throw new gameNotCreatedYet("Game is not created, " +
               "create a game.")
             if (currentGame.stateOfGame == GameState.WON){
-                logger.info(s"Game Won with ${currentGame.userPoint} points.")
+                Logger.info(s"Game Won with ${currentGame.userPoint} points.")
                 throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
                   s"to continue.")
             }
             else if (currentGame.stateOfGame == GameState.LOST){
-                logger.info("Game Lost.")
+                Logger.info("Game Lost.")
                 throw new moveForFinishedGame("You Lost. Create new game to continue.")
             }
             else {
@@ -83,10 +81,10 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         }
         catch {
             case exc : Exception =>
-                logger.error(s"Exception occurred.${exc.toString}")
+                Logger.error(s"Exception occurred.${exc.toString}")
                 throw exc
             case x: Throwable =>
-                logger.error(s"Error occurred: ${x.toString}")
+                Logger.error(s"Error occurred: ${x.toString}")
                 throw new Error(s"Error : ${x.toString}")
 
         }

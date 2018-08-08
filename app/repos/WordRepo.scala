@@ -5,8 +5,7 @@ import java.io.File
 import javax.inject._
 import models.Enums.LevelEnum
 import models.{Enums,Word}
-import org.slf4j
-import org.slf4j.LoggerFactory
+import play.api.Logger
 
 import scala.collection.immutable
 import scala.collection.mutable.ArrayBuffer
@@ -15,7 +14,6 @@ import scala.io.Source
 
 @Singleton
 class WordRepo() {
-    val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ WordRepo ])
     val wordList: Map[ Enums.LevelEnum.Value,ArrayBuffer[ Word ] ] = initializeWordList()
 
     private def initializeWordList(): immutable.HashMap[ LevelEnum.Value,ArrayBuffer[ Word ] ] = {
@@ -29,10 +27,10 @@ class WordRepo() {
             println(path)
             val filesHere = new java.io.File(path).listFiles
             for (file <- filesHere) processFile(file,words)
-            logger.info("Files has been read successfully.")
+            Logger.info("Files has been read successfully.")
         } catch {
             case e: Throwable =>
-                logger.error(s"Errors that can not be handled: '$e' occurred. Exiting.")
+                Logger.error(s"Errors that can not be handled: '$e' occurred. Exiting.")
                 throw new Error("Internal Error.")
         }
         words
@@ -47,7 +45,7 @@ class WordRepo() {
         }
         catch {
             case e: Throwable =>
-                logger.error(s"Errors that can not be handled: '$e' occurred. Exiting.")
+                Logger.error(s"Errors that can not be handled: '$e' occurred. Exiting.")
                 throw new Error("Internal Error.")
         }
     }

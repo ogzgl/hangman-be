@@ -3,8 +3,7 @@ import exceptions.InvalidInput
 import javax.inject._
 import models._
 import models.Enums.CardType
-import org.slf4j
-import org.slf4j.LoggerFactory
+import play.api.Logger
 
 import scala.collection.immutable
 import models.Enums.CardType.CardType
@@ -17,7 +16,6 @@ class CardService @Inject()(
                              revealCategory: RevealCategory,
                              consolation: Consolation)
 {
-    val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[CardService])
     def getCards: immutable.HashMap[ CardType, Cards ] = {
         val currentCards: immutable.HashMap[ CardType,Cards ] = immutable.HashMap[ CardType, Cards ](
         CardType.DISCOUNT -> discount,
@@ -37,7 +35,7 @@ class CardService @Inject()(
             case Some("consolation") => Some(consolation.asInstanceOf[Consolation])
             case _ =>
                 if (cardName.isDefined) {
-                    logger.error("Invalid card name to use.")
+                    Logger.error("Invalid card name to use.")
                     throw new InvalidInput(s"Given card name: $cardName is invalid. Use: risk,discount,buy,category,consolation.")
                 }
                 else None

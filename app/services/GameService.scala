@@ -1,9 +1,8 @@
 package services
 
-import com.google.inject
 import controllers.MoveCarrier
 import exceptions.{InvalidInput, gameNotCreatedYet, moveForFinishedGame}
-import javax.inject.Inject
+import javax.inject._
 import models.Enums.GameState
 import models.{Enums, Game}
 import org.slf4j
@@ -12,7 +11,7 @@ import play.api.Configuration
 
 import scala.collection.immutable
 
-@inject.Singleton
+@Singleton
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ GameService ])
     var currentGame: Game = _
@@ -52,28 +51,35 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
     }
 
     def buildAlphabetCost: immutable.HashMap[ Char,Int ] = {
-        val alphabetCost: immutable.HashMap[ Char,Int ] = immutable.HashMap[ Char,Int ]('e' -> 20,'a' -> 18,'r' -> 16,'i' -> 16,'o' -> 15,'t' -> 15,'n' -> 15,'s' -> 14,'l' -> 13,'c' -> 12,'u' -> 11,'d' -> 10,'p' -> 10,'m' -> 10,'h' -> 10,'g' -> 9,'b' -> 8,'f' -> 8,'w' -> 6,'y' -> 8,'k' -> 6,'v' -> 6,'x' -> 5,'z' -> 5,'j' -> 5,'q' -> 5)
+        val alphabetCost: immutable.HashMap[ Char,Int ] = immutable.HashMap[ Char,Int ]('e' -> 20,'a' -> 18,
+            'r' -> 16,'i' -> 16,'o' -> 15,'t' -> 15,'n' -> 15,'s' -> 14,'l' -> 13,'c' -> 12,'u' -> 11,'d' -> 10,
+            'p' -> 10,'m' -> 10,'h' -> 10,'g' -> 9,'b' -> 8,'f' -> 8,'w' -> 6,'y' -> 8,'k' -> 6,'v' -> 6,'x' -> 5,
+            'z' -> 5,'j' -> 5,'q' -> 5)
         alphabetCost
     }
 
     def makeMove(moveCarrier: MoveCarrier): Either[MoveResponse, GameResponse]= {
         try {
-            if(!currentGame.isInstanceOf[Game]) throw new gameNotCreatedYet("Game is not created, create a game.")
+            if(currentGame.isInstanceOf[Game] equals false) throw new gameNotCreatedYet("Game is not created, " +
+              "create a game.")
             if (currentGame.stateOfGame == GameState.WON){
                 logger.info(s"Game Won with ${currentGame.userPoint} points.")
-                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game to continue.")
+                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
+                  s"to continue.")
             }
             else if (currentGame.stateOfGame == GameState.LOST){
                 logger.info("Game Lost.")
                 throw new moveForFinishedGame("You Lost. Create new game to continue.")
             }
             else {
-                currentGame.makeAMove(moveCarrier.getAsChar,cardService.getOneCard(moveCarrier.selectedCard),moveCarrier.pos)
+                currentGame.makeAMove(
+                    moveCarrier.getAsChar,
+                    cardService.getOneCard(moveCarrier.selectedCard),
+                    moveCarrier.pos)
                 if(currentGame.gameState != GameState.CONTINUE)
                     Right(gameResponse())
                 else Left(moveResponse())
             }
-
         }
         catch {
             case exc : Exception =>
@@ -98,6 +104,8 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
             )
             currentMoveResponse
     }
+
+    def isGameCreated : Boolean = currentGame.isInstanceOf[Game]
 
     def gameResponse() : GameResponse = {
         var msg : String = ""

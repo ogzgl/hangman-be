@@ -1,13 +1,13 @@
 package controllers
 
-import javax.inject.{Inject,Singleton}
+import javax.inject.{Inject, Singleton}
+import org.slf4j
+import org.slf4j.LoggerFactory
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import play.api.mvc.{AbstractController,Action,ControllerComponents}
-import services.{GameResponse,GameService,MoveResponse}
-import org.slf4j
-import org.slf4j.LoggerFactory
+import play.api.mvc.{AbstractController, Action, ControllerComponents}
+import services.{GameResponse, GameService, MoveResponse}
 //case class object that is carried through game service and game. it holds guessed letter selected card, and position
 // for json in request.
 case class MoveCarrier(guessedLetter: Option[ String ],selectedCard: Option[ String ],pos: Option[ Int ]) {
@@ -56,12 +56,19 @@ class GameController @Inject()(cc: ControllerComponents,gameService: GameService
         val tempMove = request.body.validate[ MoveCarrier ]
         tempMove.fold(
             errors => {
-                logger.error(errors.toString())
-                NotAcceptable(Json.obj(
-                    "status" -> "KO","message" ->
-                      Json.toJson("Given input was not valid:" +
-                        "use 1 letter for guess, use risk, discount, buy,category,consolation for cards, " +
-                        "use integer for position.")))
+                if(gameService.isGameCreated){
+                    logger.error(errors.toString())
+                    NotAcceptable(Json.obj(
+                        "status" -> "KO","message" ->
+                          Json.toJson("Given input was not valid:" +
+                            "use 1 letter for guess, use risk, discount, buy,category,consolation for cards, " +
+                            "use integer for position.")))
+                }
+                else{
+                    ExpectationFailed(Json.obj(
+                        "status" -> "KO",
+                        "message" -> Json.toJson("Game is not created, create a game.")))
+                }
             },
             move => {
                 try {

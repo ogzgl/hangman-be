@@ -9,7 +9,14 @@ import org.slf4j.LoggerFactory
 import scala.collection.immutable
 import models.Enums.CardType.CardType
 
-class CardService @Inject()(risk: Risk, discount: Discount, buyLetter: BuyLetter, revealCategory: RevealCategory,consolation: Consolation){
+@Singleton
+class CardService @Inject()(
+                             risk: Risk,
+                             discount: Discount,
+                             buyLetter: BuyLetter,
+                             revealCategory: RevealCategory,
+                             consolation: Consolation)
+{
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[CardService])
     def getCards: immutable.HashMap[ CardType, Cards ] = {
         val currentCards: immutable.HashMap[ CardType,Cards ] = immutable.HashMap[ CardType, Cards ](

@@ -55,12 +55,27 @@ class WordRepo() {
     // processes each line if the length is less than 5 its hard,
     // if it is between 5 and 10 its medium,
     // if it is more than 10 its easy.
-    private def processLine(filename: String,line: String,words: immutable.Map[ LevelEnum.Value,ArrayBuffer[ Word ] ]): Unit = {
+    private def processLine(
+                             filename: String,
+                             line: String,
+                             words: immutable.Map[ LevelEnum.Value,ArrayBuffer[ Word ] ]): Unit = {
         if (line.length <= 5)
-            words(LevelEnum.HARD).append(new Word(line.trim.toLowerCase,filename.replace(".txt","")))
+            words(LevelEnum.HARD)
+              .append(
+                  new Word(
+                      line.trim.toLowerCase,
+                      filename.replace(".txt","")))
         else if (line.length <= 10)
-            words(LevelEnum.MEDIUM).append(new Word(line.trim.toLowerCase,filename.replace(".txt","")))
-        else words(LevelEnum.EASY).append(new Word(line.trim.toLowerCase,filename.replace(".txt","")))
+            words(LevelEnum.MEDIUM)
+              .append(
+                  new Word(
+                      line.trim.toLowerCase,
+                      filename.replace(".txt","")))
+        else words(LevelEnum.EASY)
+          .append(
+              new Word(
+                  line.trim.toLowerCase,
+                  filename.replace(".txt","")))
 
     }
 }

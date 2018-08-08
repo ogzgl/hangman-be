@@ -24,7 +24,7 @@ class Game(
 
     def logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ Game ])
 
-    //creates  a mutable hashmap from the alphabetCost
+    //creates  a mutable hash map from the alphabetCost
     createUsableAlphabetCost(currentCardsParam)
     def createUsableAlphabetCost(ac : immutable.HashMap[ CardType,Cards ]): Unit = {
         for(elem <- ac){
@@ -41,23 +41,9 @@ class Game(
     def makeAMove(letter: Option[ Char ],card: Option[ Cards ],position: Option[ Int ]): Unit = {
 
         val newMove = new Move(letter,card,position)
-        preCheck(newMove)
         moveSeparator(newMove)
     }
 
-    //preCheck runs validations on the given input. Such as if the card is usable, or letter is usable
-    // or checks if the given letter input actually a letter.
-    private def preCheck(move: Move): Unit = {
-        if (move.selectedCard.isDefined) {
-            isCardUsable(move.selectedCard.get)
-        }
-        if (move.guessedLetter.isDefined) {
-            isLetterUsable(move.guessedLetter.get)
-        }
-        if (move.selectedPosition.isDefined) {
-            isPositionUsable(move.selectedPosition.get)
-        }
-    }
 
     //moveSeparator, according to match result of the moveType,
     //calls the necessary internal functions.
@@ -69,20 +55,23 @@ class Game(
             case MoveType.LETTERCARD => processLetterCard(move)
             case _ =>
                 logger.error("Invalid, you can't do these combinations on input.")
-                throw new InvalidInput("Invalid input combination you can not make choice with all three or none of them or only position.")
+                throw new InvalidInput("Invalid input combination you can not make choice with all three" +
+                  " or none of them or only position.")
         }
     }
 
     //below 4 functions are similar to each other but each of them checks the
     //internal characteristics of the move and forward them to postProcess.
     private def processOnlyLetter(move: Move): Unit = {
-        if (word.updateHiddenWord(move.guessedLetter.get)) {
-            move.updateSuccess(true)
+        if(isLetterUsable(move.guessedLetter.get)){
+            if (word.updateHiddenWord(move.guessedLetter.get)) {
+                move.updateSuccess(true)
+            }
+            else {
+                move.updateSuccess(false)
+            }
+            postProcess(move)
         }
-        else {
-            move.updateSuccess(false)
-        }
-        postProcess(move)
     }
 
     private def processOnlyCard(move: Move): Unit = {
@@ -90,7 +79,6 @@ class Game(
             if (isCardUsable(move.selectedCard.get)) {
                 logger.info("Category card is used.")
                 word.hiddenCategory = word.category
-                currentCards(CardType.REVEALCATEGORY) -= 1
                 move.updateSuccess(true)
                 postProcess(move)
             }
@@ -102,16 +90,20 @@ class Game(
     }
 
     private def processCardPos(move: Move): Unit = {
-        if (move.selectedCard.get.cardType equals CardType.BUYLETTER)
+        if (move.selectedCard.get.cardType equals CardType.BUYLETTER){
             if (isCardUsable(move.selectedCard.get)) {
-                word.usePos(move.selectedPosition.get)
-                move.updateSuccess(true)
-                postProcess(move)
+                if(isPositionUsable(move.selectedPosition.get)){
+                    logger.info(s"${move.selectedCard.get.cardType.toString} is used with position: ${move.selectedPosition.get}")
+                    word.usePos(move.selectedPosition.get)
+                    move.updateSuccess(true)
+                    postProcess(move)
+                }
             }
-            else {
-                logger.error("This card can not be used with position.")
-                throw new InvalidInput(s"This card: ${move.selectedCard.get.cardType} can not be used with position")
-            }
+        }
+        else {
+            logger.error("This card can not be used with position.")
+            throw new InvalidInput(s"This card can not be used with position")
+        }
     }
 
     private def processLetterCard(move: Move): Unit = {
@@ -131,7 +123,7 @@ class Game(
         }
         else {
             logger.info(s"${move.selectedCard.get.cardType.toString} usage with letter")
-            throw new InvalidInput(s"This ${move.selectedCard.get.cardType.toString} can not be used with letter")
+            throw new InvalidInput("This card can not be used with letter")
         }
     }
 
@@ -167,7 +159,8 @@ class Game(
                     else moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                     if(!move.isSuccess)  moveCost+=alphabetCost(move.guessedLetter.get)
                 case MoveType.ONLYCARD => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
-                case MoveType.ONLYLETTER => if(!move.isSuccess) moveCost = alphabetCost(move.guessedLetter.get) else moveCost=0
+                case MoveType.ONLYLETTER => if(!move.isSuccess)
+                    moveCost = alphabetCost(move.guessedLetter.get) else moveCost=0
                 case _ =>
                     logger.error("Unexpected Error!")
                     throw new InvalidInput("Unexpected Error: Move cost calculation for invalid move.")
@@ -175,12 +168,9 @@ class Game(
             moveCost
         }
         else {
-            if (lastCard._2.get == CardType.RISK) {
-                moveCost = 0
-            }
+            if (lastCard._2.get == CardType.RISK) moveCost = 0
             if (lastCard._2.get == CardType.CONSOLATION) {
-                if(!move.isSuccess)
-                    moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
+                if(!move.isSuccess) moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
                 else moveCost = 0
             }
             moveCost
@@ -218,7 +208,8 @@ class Game(
                 true
             else throw new PositionAlreadyRevealed(s"Given position $pos was already revealed.")
         }
-        else throw new PositionOutOfRange(s"Position can not be smaller than 0 or can not be larger then word length: ${word.word.length}")
+        else throw new PositionOutOfRange(s"Position can not be smaller than 0 or can not be larger then word" +
+          s" length: ${word.word.length}")
 
 
     }

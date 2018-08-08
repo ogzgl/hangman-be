@@ -24,6 +24,7 @@ class Game(
 
     def logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ Game ])
 
+    //creates  a mutable hashmap from the alphabetCost
     createUsableAlphabetCost(currentCardsParam)
     def createUsableAlphabetCost(ac : immutable.HashMap[ CardType,Cards ]): Unit = {
         for(elem <- ac){

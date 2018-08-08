@@ -77,7 +77,7 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         }
         catch {
             case exc : Exception =>
-                logger.error(s"Exception occured.${exc.toString}")
+                logger.error(s"Exception occurred.${exc.toString}")
                 throw exc
             case x: Throwable =>
                 logger.error(s"Error occurred: ${x.toString}")

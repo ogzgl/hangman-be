@@ -32,7 +32,7 @@ class GameController @Inject()(cc: ControllerComponents,gameService: GameService
         (JsPath \ "gameState").write[ String ] and
         (JsPath \ "isSuccess").write[ String ]
       ) (unlift(MoveResponse.unapply))
-
+    //writes for game response, work at the end of the game, response json that holds necessary information.
     implicit val gameWrites: Writes[ GameResponse ] = (
       (JsPath \ "info").write[ String ] and
         (JsPath \ "state").write[ String ]

@@ -10,6 +10,7 @@ import play.api.mvc.{AbstractController, Action, ControllerComponents}
 import services.{GameResponse, GameService, MoveResponse}
 //case class object that is carried through game service and game. it holds guessed letter selected card, and position
 // for json in request.
+// TODO Move this class to a dedicated package and object.
 case class MoveCarrier(guessedLetter: Option[ String ],selectedCard: Option[ String ],pos: Option[ Int ]) {
     var temp: Option[ Char ] = None
 
@@ -24,6 +25,7 @@ case class MoveCarrier(guessedLetter: Option[ String ],selectedCard: Option[ Str
 class GameController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
     val logger: slf4j.Logger = LoggerFactory.getLogger(classOf[ GameController ])
 
+    // TODO Move the json readers/writers to a dedicated package and object.
     //writes for move response, move response is for response json it holds necessary information.
     implicit val moveWrites: Writes[ MoveResponse ] = (
       (JsPath \ "userPoint").write[ Int ] and
@@ -56,6 +58,7 @@ class GameController @Inject()(cc: ControllerComponents,gameService: GameService
         val tempMove = request.body.validate[ MoveCarrier ]
         tempMove.fold(
             errors => {
+                // TODO: Why are you checking whether the game has been created here?
                 if(gameService.isGameCreated){
                     logger.error(errors.toString())
                     NotAcceptable(Json.obj(

@@ -2,19 +2,14 @@ package test
 
 import models.Enums.GameState
 import models.{Game,Word}
-import org.scalatestplus.play._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{CardService,GameService}
 
 import scala.concurrent.Future
 
-class MakeGuessTest extends PlaySpec with GuiceOneAppPerSuite {
-    val gameService: GameService = app.injector.instanceOf[ GameService ]
-    val cardService: CardService = app.injector.instanceOf[ CardService ]
-    //    val wordService: WordService = app.injector.instanceOf[WordService]
+class MakeGuessTest extends HangmanTestBuilder {
+
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,

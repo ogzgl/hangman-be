@@ -1,13 +1,12 @@
 package test
 
-import org.scalatestplus.play._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.Result
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test._
+
 import scala.concurrent.Future
 
-class CreateGameTest extends PlaySpec with GuiceOneAppPerSuite{
+class CreateGameTest extends HangmanTestBuilder {
     "GameCreation controller" should {
         "welcome the visitor" in {
             val greeting = route(app, FakeRequest(GET, "/")).get

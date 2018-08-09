@@ -36,7 +36,6 @@ class Game(
     // creates the move object
     // forwards it to preCheck.
     def makeAMove(letter: Option[ Char ],card: Option[ Cards ],position: Option[ Int ]): Unit = {
-
         val newMove = new Move(letter,card,position)
         moveSeparator(newMove)
     }
@@ -231,7 +230,7 @@ class Game(
             }
             else {
                 Logger.error(s"Try to use a card while there is an active ${temp._2.toString} card")
-                throw new EnabledCardExists(s"There is enabled ${temp._2} card you can't make this move.")
+                throw new EnabledCardExists(s"There is enabled ${temp._2.get} card you can't make this move.")
             }
         else {
             Logger.error(s"Insufficient point to use card: ${card.cardType.toString}")

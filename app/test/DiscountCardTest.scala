@@ -2,21 +2,13 @@ package test
 
 import models.Enums.{CardType,GameState}
 import models.{Game,Word}
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.{CardService,GameService}
 
 import scala.concurrent.Future
 
-class DiscountCardTest extends PlaySpec with GuiceOneAppPerSuite {
-    val gameService: GameService = app.injector.instanceOf[ GameService ]
-    val cardService: CardService = app.injector.instanceOf[ CardService ]
-    val configuration: Configuration = app.injector.instanceOf[ Configuration ]
-
+class DiscountCardTest extends HangmanTestBuilder {
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,

@@ -88,11 +88,11 @@ class DiscountCardTest extends PlaySpec with GuiceOneAppPerSuite {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
-            newUserPoint == (tempUserPoint
+            newUserPoint must equal (tempUserPoint
               - configuration.underlying.getInt("alphabetCost.k") / 4
               - configuration.underlying.getInt("discount.cost"))
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
-            tempHidden.diff(realHiddenWord.toString()).length mustBe 1
+            tempHidden.diff(realHiddenWord.toString()).length mustBe 0
         }
     }
 
@@ -100,6 +100,7 @@ class DiscountCardTest extends PlaySpec with GuiceOneAppPerSuite {
         "make the move" in {
             gameService.currentGame.userPoint = 35
             gameService.currentGame.currentCards(CardType.DISCOUNT) = 2
+            val tempHidden = gameService.currentGame.word.hiddenWord
             val tempUserPoint = gameService.currentGame.userPoint
             val json = """{"letter" : "d", "card" : "discount"}"""
             val moveRequest = FakeRequest(POST,"/play")
@@ -109,7 +110,32 @@ class DiscountCardTest extends PlaySpec with GuiceOneAppPerSuite {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
-            newUserPoint == (tempUserPoint - configuration.underlying.getInt("discount.cost"))
+            newUserPoint must equal (tempUserPoint
+              - configuration.underlying.getInt("discount.cost"))
+            val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
+            tempHidden.diff(realHiddenWord.toString()).length mustBe 1
+        }
+    }
+
+    "In letter exist at multiple location" must {
+        "make the move" in {
+            gameService.currentGame.userPoint = 35
+            gameService.currentGame.currentCards(CardType.DISCOUNT) = 2
+            val tempHidden = gameService.currentGame.word.hiddenWord
+            val tempUserPoint = gameService.currentGame.userPoint
+            val json = """{"letter" : "e", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe OK
+            contentType(moveResponse) mustBe Some("application/json")
+            val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
+            newUserPoint must equal (tempUserPoint
+              - configuration.underlying.getInt("discount.cost"))
+            val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
+            tempHidden.diff(realHiddenWord.toString()).length mustNot equal(1)
+            tempHidden.diff(realHiddenWord.toString()).length mustNot equal(0)
         }
     }
 }

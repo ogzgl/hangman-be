@@ -1,0 +1,115 @@
+package test
+
+import models.Enums.{CardType,GameState}
+import models.{Game,Word}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
+import play.api.mvc.Result
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import services.{CardService,GameService}
+
+import scala.concurrent.Future
+
+class DiscountCardTest extends PlaySpec with GuiceOneAppPerSuite {
+    val gameService: GameService = app.injector.instanceOf[ GameService ]
+    val cardService: CardService = app.injector.instanceOf[ CardService ]
+    val configuration: Configuration = app.injector.instanceOf[ Configuration ]
+
+    gameService.createTestableGame(new Game(
+        new Word("deneme","kategori"),
+        cardService.getCards,
+        gameService.buildAlphabetCost,
+        35,
+        GameState.CONTINUE
+    ))
+
+    "In discount usable case" must {
+        "make the move" in {
+            val json = """{"letter" : "z", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe OK
+            contentType(moveResponse) mustBe Some("application/json")
+        }
+    }
+    "In discount not usable case" must {
+        "throw an exception" in {
+            gameService.currentGame.currentCards(CardType.DISCOUNT) = 0
+            val json = """{"letter" : "z", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe EXPECTATION_FAILED
+            contentType(moveResponse) mustBe Some("application/json")
+        }
+    }
+
+    "In user has enough points to use discount case" must {
+        "make the move" in {
+            gameService.currentGame.currentCards(CardType.DISCOUNT) = 2
+            val json = """{"letter" : "t", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe OK
+            contentType(moveResponse) mustBe Some("application/json")
+        }
+    }
+    "In user has not enough points to use discount" must {
+        "make the move" in {
+            gameService.currentGame.userPoint = 1
+            val json = """{"letter" : "z", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe EXPECTATION_FAILED
+            contentType(moveResponse) mustBe Some("application/json")
+        }
+    }
+
+    "In word does not contains letter" must {
+        "make the move" in {
+            gameService.currentGame.userPoint = 35
+            gameService.currentGame.currentCards(CardType.DISCOUNT) = 2
+            val tempHidden = gameService.currentGame.word.hiddenWord
+            val tempUserPoint = gameService.currentGame.userPoint
+            val json = """{"letter" : "k", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe OK
+            contentType(moveResponse) mustBe Some("application/json")
+            val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
+            newUserPoint == (tempUserPoint
+              - configuration.underlying.getInt("alphabetCost.k") / 4
+              - configuration.underlying.getInt("discount.cost"))
+            val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
+            tempHidden.diff(realHiddenWord.toString()).length mustBe 1
+        }
+    }
+
+    "In letter exist at one location" must {
+        "make the move" in {
+            gameService.currentGame.userPoint = 35
+            gameService.currentGame.currentCards(CardType.DISCOUNT) = 2
+            val tempUserPoint = gameService.currentGame.userPoint
+            val json = """{"letter" : "d", "card" : "discount"}"""
+            val moveRequest = FakeRequest(POST,"/play")
+              .withHeaders("Content-Type" -> "application/json")
+              .withBody(json)
+            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            status(moveResponse) mustBe OK
+            contentType(moveResponse) mustBe Some("application/json")
+            val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
+            newUserPoint == (tempUserPoint - configuration.underlying.getInt("discount.cost"))
+        }
+    }
+}

@@ -1,6 +1,6 @@
 package controllers
 
-import exceptions.InvalidInput
+import customexceptions.InvalidInput
 import javax.inject._
 import jsonhandlers.{LevelOfGame, MoveResponse}
 import play.api.Logger
@@ -13,7 +13,7 @@ import services.GameService
 @Singleton
 class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
     def greeting = Action {
-        Ok("Welcome")
+        Ok(Json.obj("status"->"OK", "message" -> Json.toJson("Welcome to Hangman")))
     }
 
     implicit val moveWrites: Writes[ MoveResponse ] = (

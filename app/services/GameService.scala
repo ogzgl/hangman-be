@@ -1,6 +1,6 @@
 package services
 
-import exceptions.{InvalidInput, gameNotCreatedYet, moveForFinishedGame}
+import customexceptions.{InvalidInput, GameNotCreatedYet, MoveForFinishedGame}
 import javax.inject._
 import jsonhandlers.{GameResponse, MoveCarrier, MoveResponse}
 import models.Enums.GameState
@@ -13,6 +13,10 @@ import scala.collection.immutable
 @Singleton
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
     var currentGame: Game = _
+
+    def createTestableGame(game : Game): Unit ={
+        currentGame = game
+    }
 
     def initializeGame(level: String): MoveResponse = {
         val gameLevel: Enums.LevelEnum.Value = {
@@ -34,7 +38,9 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                 currentGame = new Game(
                     wordService.getRandWord(gameLevel),
                     cardService.getCards,
-                    buildAlphabetCost
+                    buildAlphabetCost,
+                    100,
+                    GameState.CONTINUE
                 )
                 Logger.info(s"Game started successfully with $gameLevel level.")
                 Logger.info("Word is: " + currentGame.word)
@@ -58,16 +64,16 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
 
     def makeMove(moveCarrier: MoveCarrier): Either[MoveResponse, GameResponse]= {
         try {
-            if(currentGame.isInstanceOf[Game] equals false) throw new gameNotCreatedYet("Game is not created, " +
+            if(currentGame.isInstanceOf[Game] equals false) throw new GameNotCreatedYet("Game is not created, " +
               "create a game.")
             if (currentGame.stateOfGame == GameState.WON){
                 Logger.info(s"Game Won with ${currentGame.userPoint} points.")
-                throw new moveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
+                throw new MoveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
                   s"to continue.")
             }
             else if (currentGame.stateOfGame == GameState.LOST){
                 Logger.info("Game Lost.")
-                throw new moveForFinishedGame("You Lost. Create new game to continue.")
+                throw new MoveForFinishedGame("You Lost. Create new game to continue.")
             }
             else {
                 currentGame.makeAMove(

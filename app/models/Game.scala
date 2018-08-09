@@ -1,6 +1,6 @@
 package models
 
-import exceptions._
+import customexceptions._
 import models.Enums.CardType.CardType
 import models.Enums.{CardType,GameState,MoveType}
 import play.api.Logger
@@ -9,17 +9,17 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable,mutable}
 
 class Game(
-            val word: Word,
+            var word: Word,
             currentCardsParam: immutable.HashMap[ CardType,Cards ],
-            alphabetCost: immutable.HashMap[ Char,Int ]
+            alphabetCost: immutable.HashMap[ Char,Int ],
+            var userPoint: Int = 100,
+            var gameState : Enums.GameState.Value
           ) {
     val currentCards : mutable.HashMap[CardType.CardType, Int] = mutable.HashMap[CardType.CardType, Int]()
     val startingMove : Move = new Move(None,None,None)
     startingMove.success = true
     val moveList: ArrayBuffer[ Move ] = ArrayBuffer(startingMove)
-    private val remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
-    var userPoint: Int = 100
-    var gameState: Enums.GameState.Value = Enums.GameState.CONTINUE
+    var remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
 
     //creates  a mutable hash map from the alphabetCost
     createUsableAlphabetCost(currentCardsParam)
@@ -151,13 +151,17 @@ class Game(
                 case MoveType.LETTERCARD =>
                     if (move.selectedCard.get.cardType equals CardType.DISCOUNT) {
                         moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
-                        if(!move.isSuccess)  moveCost += alphabetCost(move.guessedLetter.get) / 4
+                        if(!move.isSuccess)
+                            moveCost += alphabetCost(move.guessedLetter.get) / 4
                     }
-                    else moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
-                    if(!move.isSuccess)  moveCost+=alphabetCost(move.guessedLetter.get)
+                    else {
+                        moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
+                        if(!move.isSuccess)  moveCost+=alphabetCost(move.guessedLetter.get)
+                    }
                 case MoveType.ONLYCARD => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                 case MoveType.ONLYLETTER => if(!move.isSuccess)
-                    moveCost = alphabetCost(move.guessedLetter.get) else moveCost=0
+                    moveCost = alphabetCost(move.guessedLetter.get)
+                    else moveCost=0
                 case _ =>
                     Logger.error("Unexpected Error!")
                     throw new InvalidInput("Unexpected Error: Move cost calculation for invalid move.")
@@ -195,7 +199,7 @@ class Game(
             }
         else {
             Logger.error(s"Usage of letter : $letter which used before.")
-            throw new AlreadyUsedLetter(s"This letter: $letter already used.")
+            throw new AlreadyUsedLetter("This letter already used.")
         }
     }
 
@@ -207,8 +211,6 @@ class Game(
         }
         else throw new PositionOutOfRange(s"Position can not be smaller than 0 or can not be larger then word" +
           s" length: ${word.word.length}")
-
-
     }
 
     //helper function, checks if card is usable, conditions that

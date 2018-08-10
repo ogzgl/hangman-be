@@ -9,6 +9,12 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 
 class CategoryCardTest extends HangmanTestBuilder {
+    def sendPost(json: String): Future[ Result ] = {
+        val moveRequest = FakeRequest(POST,"/play")
+          .withHeaders("Content-Type" -> "application/json")
+          .withBody(json)
+        route(app,moveRequest).get
+    }
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,
@@ -20,10 +26,7 @@ class CategoryCardTest extends HangmanTestBuilder {
         "reveal the category if quota available" in {
             val beforeUserPoint = gameService.currentGame.userPoint
             val json = """{"card" : "category"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val category: String = (contentAsJson(moveResponse) \ "message" \ "category").as[ String ]
@@ -36,10 +39,7 @@ class CategoryCardTest extends HangmanTestBuilder {
             gameService.currentGame.currentCards(CardType.REVEALCATEGORY) = 0
             val beforeUserPoint: Int = gameService.currentGame.userPoint
             val json = """{"card" : "category"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("usage limit exceeded")
@@ -59,10 +59,7 @@ class CategoryCardTest extends HangmanTestBuilder {
             )
             val beforeUserPoint = gameService.currentGame.userPoint
             val json = """{"card" : "category"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("Insufficient points")

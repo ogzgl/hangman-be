@@ -9,6 +9,12 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 
 class GameEndingTest extends HangmanTestBuilder {
+    def sendPost(json: String): Future[ Result ] = {
+        val moveRequest = FakeRequest(POST,"/play")
+          .withHeaders("Content-Type" -> "application/json")
+          .withBody(json)
+        route(app,moveRequest).get
+    }
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,
@@ -21,10 +27,7 @@ class GameEndingTest extends HangmanTestBuilder {
         "tell to user game is won" in {
             gameService.currentGame.word.hiddenWord = "dene*e"
             val json = """{"letter" : "m"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("won")
@@ -41,10 +44,7 @@ class GameEndingTest extends HangmanTestBuilder {
             ))
             gameService.currentGame.userPoint = 5
             val json = """{"letter" : "c"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("lost")

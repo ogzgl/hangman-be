@@ -1,7 +1,7 @@
 package test
 
 import models.Enums.{CardType,GameState}
-import models.{Game,Word}
+import models.{Game,Move,Word}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -9,6 +9,12 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 
 class RiskCardTest extends HangmanTestBuilder {
+    def sendPost(json: String): Future[ Result ] = {
+        val moveRequest = FakeRequest(POST,"/play")
+          .withHeaders("Content-Type" -> "application/json")
+          .withBody(json)
+        route(app,moveRequest).get
+    }
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,
@@ -19,10 +25,7 @@ class RiskCardTest extends HangmanTestBuilder {
     "In risk usable case" must {
         "make the move" in {
             val json = """{"card" : "risk", "letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
         }
@@ -32,10 +35,7 @@ class RiskCardTest extends HangmanTestBuilder {
             gameService.currentGame.currentCards(CardType.RISK) = 0
             gameService.currentGame.userPoint = 45
             val json = """{"card" : "risk", "letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("usage limit exceeded")
@@ -51,10 +51,7 @@ class RiskCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val json = """{"card" : "risk", "letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
         }
@@ -70,10 +67,7 @@ class RiskCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val json = """{"card" : "risk", "letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("Insufficient points")
@@ -81,7 +75,7 @@ class RiskCardTest extends HangmanTestBuilder {
     }
 
     "In risk usage with wrong guess point test" must {
-        "wrong guess with risk card" in {
+        "decrease points from user after risk usage with wrong guess" in {
             gameService.currentGame = new Game(
                 new Word("deneme","kategori"),
                 cardService.getCards,
@@ -89,27 +83,15 @@ class RiskCardTest extends HangmanTestBuilder {
                 45,
                 GameState.CONTINUE
             )
-            val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "risk", "letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
-            status(moveResponse) mustBe OK
-            contentType(moveResponse) mustBe Some("application/json")
-            val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint
-              - configuration.underlying.getInt("alphabetCost.a")
-              - configuration.underlying.getInt("risk.cost"))
-        }
-
-        "decrease points from user after risk usage with wrong guess" in {
+            val temporaryMove: Move = new Move(
+                None,
+                cardService.getOneCard(Some("risk")),
+                None)
+            temporaryMove.updateSuccess(false)
+            gameService.currentGame.moveList.append(temporaryMove)
             val beforeUserPoint: Int = gameService.currentGame.userPoint
             val json = """{"letter" : "c"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
@@ -118,7 +100,7 @@ class RiskCardTest extends HangmanTestBuilder {
     }
 
     "In risk usage with correct guess point check" must {
-        "correct guess with risk card" in {
+        "invariable points after risk usage with correct guess" in {
             gameService.currentGame = new Game(
                 new Word("deneme","kategori"),
                 cardService.getCards,
@@ -126,28 +108,18 @@ class RiskCardTest extends HangmanTestBuilder {
                 45,
                 GameState.CONTINUE
             )
-            val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "risk", "letter" : "d"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
-            status(moveResponse) mustBe OK
-            contentType(moveResponse) mustBe Some("application/json")
-            val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("risk.cost"))
-        }
-        "invariable points after risk usage with correct guess" in {
+            val temporaryMove: Move = new Move(
+                None,
+                cardService.getOneCard(Some("risk")),
+                None)
+            temporaryMove.updateSuccess(true)
+            gameService.currentGame.moveList.append(temporaryMove)
             val beforeUserPoint: Int = gameService.currentGame.userPoint
             val json = """{"letter" : "x"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
-            val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint)
+            beforeUserPoint must equal(gameService.currentGame.userPoint)
         }
     }
 
@@ -163,10 +135,7 @@ class RiskCardTest extends HangmanTestBuilder {
             )
             val beforeUserPoint: Int = gameService.currentGame.userPoint
             val json = """{"card" : "risk", "letter" : "d"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
@@ -176,10 +145,7 @@ class RiskCardTest extends HangmanTestBuilder {
 
         "throw an exception that indicates enabled card" in {
             val json = """{"letter" : "r" , "card" : "discount"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("There is enabled")

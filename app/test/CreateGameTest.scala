@@ -7,6 +7,12 @@ import play.api.test._
 import scala.concurrent.Future
 
 class CreateGameTest extends HangmanTestBuilder {
+    def sendPost(json: String): Future[ Result ] = {
+        val moveRequest = FakeRequest(POST,"/")
+          .withHeaders("Content-Type" -> "application/json")
+          .withBody(json)
+        route(app,moveRequest).get
+    }
     "GameCreation controller" should {
         "welcome the visitor" in {
             val greeting = route(app, FakeRequest(GET, "/")).get
@@ -19,26 +25,10 @@ class CreateGameTest extends HangmanTestBuilder {
     "GameCreation controller" should {
         "create a game" in {
             val json = """{"level" : "easy"}"""
-            val gameCreationRequest = FakeRequest(POST, "/")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val creationResponse : Future[Result] = route(app, gameCreationRequest).get
+            val creationResponse: Future[ Result ] = sendPost(json)
             status(creationResponse) mustBe OK
             contentType(creationResponse) mustBe Some("application/json")
             contentAsString(creationResponse) must include("userPoint")
-        }
-    }
-
-    "Game controller" must {
-        "make a move" in {
-            val json = """{"letter" : "e"}"""
-            val moveRequest = FakeRequest(POST, "/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse : Future[Result] = route(app, moveRequest).get
-            status(moveResponse) mustBe OK
-            contentType(moveResponse) mustBe Some("application/json")
-            contentAsString(moveResponse) must include("userPoint")
         }
     }
 }

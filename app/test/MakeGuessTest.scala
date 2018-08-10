@@ -9,7 +9,12 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 
 class MakeGuessTest extends HangmanTestBuilder {
-
+    def sendPost(json: String): Future[ Result ] = {
+        val moveRequest = FakeRequest(POST,"/play")
+          .withHeaders("Content-Type" -> "application/json")
+          .withBody(json)
+        route(app,moveRequest).get
+    }
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,
@@ -22,10 +27,7 @@ class MakeGuessTest extends HangmanTestBuilder {
     "In non usable case" must {
         "throw exception" in {
             val json = """{"letter" : "z"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
         }
@@ -33,10 +35,7 @@ class MakeGuessTest extends HangmanTestBuilder {
     "In usable case" must {
         "should make move" in {
             val json = """{"letter" : "a"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
         }
@@ -45,10 +44,7 @@ class MakeGuessTest extends HangmanTestBuilder {
     "In does not exist case" must {
         "real hidden word must be equal to tempHidden" in {
             val json = """{"letter" : "q"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
@@ -59,10 +55,7 @@ class MakeGuessTest extends HangmanTestBuilder {
     "In letter exist at one position case" must {
         "real hidden must differ one position from temp hidden" in {
             val json = """{"letter" : "d"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
@@ -72,10 +65,7 @@ class MakeGuessTest extends HangmanTestBuilder {
     "In letter exist at multiple position case" must {
         "real hidden must differ in multiple positions from temp hidden" in {
             val json = """{"letter" : "e"}"""
-            val moveRequest = FakeRequest(POST,"/play")
-              .withHeaders("Content-Type" -> "application/json")
-              .withBody(json)
-            val moveResponse: Future[ Result ] = route(app,moveRequest).get
+            val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get

@@ -8,7 +8,12 @@ import play.api.libs.json._
 * */
 case class LevelOfGame(level: String)
 
-case class MoveResponse(userPoint: Int,hiddenWord: String,category: String,gameState: String,isSuccess: String)
+case class MoveResponse(userPoint: Int,
+                        hiddenWord: String,
+                        category: String,
+                        gameState: String,
+                        isSuccess: String,
+                        enabledCard: String)
 
 case class GameResponse(message: String,gameState: String)
 
@@ -20,7 +25,8 @@ object MoveResponse {
         (JsPath \ "hiddenWord").write[ String ] and
         (JsPath \ "category").write[ String ] and
         (JsPath \ "gameState").write[ String ] and
-        (JsPath \ "isSuccess").write[ String ]
+        (JsPath \ "isSuccess").write[ String ] and
+        (JsPath \ "enabledCard").write[ String ]
       ) (unlift(MoveResponse.unapply))
 }
 

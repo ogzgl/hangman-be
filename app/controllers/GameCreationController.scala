@@ -21,7 +21,8 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
         (JsPath \ "hiddenWord").write[ String ] and
         (JsPath \ "category").write[ String ] and
         (JsPath \ "gameState").write[ String ] and
-        (JsPath \ "isSuccess").write[ String ]
+        (JsPath \ "isSuccess").write[ String ] and
+        (JsPath \ "enabledCard").write[ String ]
       ) (unlift(MoveResponse.unapply))
 
     implicit val levelReads: Reads[ LevelOfGame ] = (JsPath \ "level").read[ String ].map(LevelOfGame.apply)

@@ -101,6 +101,7 @@ class ConsolationCardTest extends HangmanTestBuilder {
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
+            contentAsString(moveResponse) must include("enabled card")
             val afterUserPoint: Int = gameService.currentGame.userPoint
             afterUserPoint must equal(beforeUserPoint - (configuration.underlying.getInt("alphabetCost.w") / 2))
         }

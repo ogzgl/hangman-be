@@ -242,7 +242,7 @@ class Game(
     //helper function, checks if the last move has enabled card
     // that effects the current move such as,
     // not successive move with risk card usage.
-    private def lastCardCheck: (Boolean,Option[ CardType ]) = {
+    def lastCardCheck: (Boolean,Option[ CardType ]) = {
         if (moveList.last.selectedCard.isDefined) {
             if ((moveList.last.selectedCard.get.cardType equals CardType.RISK) && moveList.last.isSuccess)
                 (true,Some(CardType.RISK))

@@ -1,12 +1,11 @@
 package services
 
-import customexceptions.{InvalidInput, GameNotCreatedYet, MoveForFinishedGame}
+import customexceptions.{GameNotCreatedYet,InvalidInput,MoveForFinishedGame}
 import javax.inject._
 import jsonhandlers.{GameResponse, MoveCarrier, MoveResponse}
 import models.Enums.GameState
 import models.{Enums, Game}
-import play.api.Logger
-import play.api.Configuration
+import play.api.{Configuration,Logger}
 
 import scala.collection.immutable
 
@@ -14,7 +13,7 @@ import scala.collection.immutable
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
     var currentGame: Game = _
 
-    def createTestableGame(game : Game): Unit ={
+    def createTestableGame(game: Game): Unit = {
         currentGame = game
     }
 
@@ -62,16 +61,16 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         alphabetCost
     }
 
-    def makeMove(moveCarrier: MoveCarrier): Either[MoveResponse, GameResponse]= {
+    def makeMove(moveCarrier: MoveCarrier): Either[ MoveResponse,GameResponse ] = {
         try {
-            if(currentGame.isInstanceOf[Game] equals false) throw new GameNotCreatedYet("Game is not created, " +
+            if (currentGame.isInstanceOf[ Game ] equals false) throw new GameNotCreatedYet("Game is not created, " +
               "create a game.")
-            if (currentGame.stateOfGame == GameState.WON){
+            if (currentGame.stateOfGame == GameState.WON) {
                 Logger.info(s"Game Won with ${currentGame.userPoint} points.")
                 throw new MoveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
                   s"to continue.")
             }
-            else if (currentGame.stateOfGame == GameState.LOST){
+            else if (currentGame.stateOfGame == GameState.LOST) {
                 Logger.info("Game Lost.")
                 throw new MoveForFinishedGame("You Lost. Create new game to continue.")
             }
@@ -80,13 +79,13 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
                     moveCarrier.getAsChar,
                     cardService.getOneCard(moveCarrier.selectedCard),
                     moveCarrier.pos)
-                if(currentGame.gameState != GameState.CONTINUE)
+                if (currentGame.gameState != GameState.CONTINUE)
                     Right(gameResponse())
                 else Left(moveResponse())
             }
         }
         catch {
-            case exc : Exception =>
+            case exc: Exception =>
                 Logger.error(s"Exception occurred.${exc.toString}")
                 throw exc
             case x: Throwable =>
@@ -98,23 +97,24 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
 
     //    private def creationResponse()
     def moveResponse(): MoveResponse = {
-            val currentMoveResponse: MoveResponse = MoveResponse(
-                currentGame.userPoint,
-                currentGame.word.hiddenWord,
-                currentGame.word.hiddenCategory,
-                currentGame.gameState.toString,
-                if (currentGame.moveList.last.isSuccess) "correct"
-                else "incorrect"
-            )
-            currentMoveResponse
+        val lastCard = currentGame.lastCardCheck
+        val currentMoveResponse: MoveResponse = MoveResponse(
+            currentGame.userPoint,
+            currentGame.word.hiddenWord,
+            currentGame.word.hiddenCategory,
+            currentGame.gameState.toString,
+            if (currentGame.moveList.last.isSuccess) "correct" else "incorrect",
+            if (lastCard._1) s"There is enabled card" else "No enabled card"
+        )
+        currentMoveResponse
     }
 
-    def isGameCreated : Boolean = currentGame.isInstanceOf[Game]
-
-    def gameResponse() : GameResponse = {
-        var msg : String = ""
-        if(currentGame.gameState equals GameState.LOST) msg ="You lost"
+    def gameResponse(): GameResponse = {
+        var msg: String = ""
+        if (currentGame.gameState equals GameState.LOST) msg = "You lost"
         else msg = "You won the game"
-        GameResponse(msg, currentGame.gameState.toString)
+        GameResponse(msg,currentGame.gameState.toString)
     }
+
+    def isGameCreated: Boolean = currentGame.isInstanceOf[ Game ]
 }

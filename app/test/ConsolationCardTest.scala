@@ -104,11 +104,13 @@ class ConsolationCardTest extends HangmanTestBuilder {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("consolation.cost") - configuration.underlying.getDouble("alphabetCost.x"))
+            afterUserPoint must equal(beforeUserPoint
+              - configuration.underlying.getInt("consolation.cost")
+              - configuration.underlying.getDouble("alphabetCost.x"))
         }
         "cut down half cost after consolation usage with incorrect guess" in {
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"letter" : "a"}"""
+            val json = """{"letter" : "w"}"""
             val moveRequest = FakeRequest(POST,"/play")
               .withHeaders("Content-Type" -> "application/json")
               .withBody(json)
@@ -116,7 +118,7 @@ class ConsolationCardTest extends HangmanTestBuilder {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabetCost.a") / 2)
+            afterUserPoint must equal(beforeUserPoint - (configuration.underlying.getInt("alphabetCost.w") / 2))
         }
     }
     "In consolation usage with correct guess point check" must {

@@ -144,7 +144,7 @@ class Game(
     private def moveCostCalc(move: Move): Int = {
         val lastCard = lastCardCheck
         var moveCost = 0
-        if (!lastCard._1) {
+        if (lastCard._1 equals false) {
             move.moveType match {
                 case MoveType.CARDPOS => moveCost = currentCardsParam(move.selectedCard.get.cardType).cost
                 case MoveType.LETTERCARD =>
@@ -170,7 +170,8 @@ class Game(
         else {
             if (lastCard._2.get == CardType.RISK) moveCost = 0
             if (lastCard._2.get == CardType.CONSOLATION) {
-                if(!move.isSuccess) moveCost = alphabetCost(moveList.last.guessedLetter.get) / 2
+                if (!move.isSuccess)
+                    moveCost = alphabetCost(move.guessedLetter.get) / 2
                 else moveCost = 0
             }
             moveCost
@@ -245,7 +246,7 @@ class Game(
         if (moveList.last.selectedCard.isDefined) {
             if ((moveList.last.selectedCard.get.cardType equals CardType.RISK) && moveList.last.isSuccess)
                 (true,Some(CardType.RISK))
-            else if ((moveList.last.selectedCard.get.cardType equals CardType.CONSOLATION) && !moveList.last.isSuccess)
+            else if ((moveList.last.selectedCard.get.cardType equals CardType.CONSOLATION) && (moveList.last.isSuccess equals false))
                 (true,Some(CardType.CONSOLATION))
             else
                 (false,None)

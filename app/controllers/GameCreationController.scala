@@ -4,7 +4,6 @@ import customexceptions.InvalidInput
 import javax.inject._
 import jsonhandlers.{LevelOfGame, MoveResponse}
 import play.api.Logger
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.mvc._
 import services.GameService
@@ -15,15 +14,6 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
     def greeting = Action {
         Ok(Json.obj("status"->"OK", "message" -> Json.toJson("Welcome to Hangman")))
     }
-
-    implicit val moveWrites: Writes[ MoveResponse ] = (
-      (JsPath \ "userPoint").write[ Int ] and
-        (JsPath \ "hiddenWord").write[ String ] and
-        (JsPath \ "category").write[ String ] and
-        (JsPath \ "gameState").write[ String ] and
-        (JsPath \ "isSuccess").write[ String ] and
-        (JsPath \ "enabledCard").write[ String ]
-      ) (unlift(MoveResponse.unapply))
 
     implicit val levelReads: Reads[ LevelOfGame ] = (JsPath \ "level").read[ String ].map(LevelOfGame.apply)
 

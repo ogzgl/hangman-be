@@ -63,35 +63,41 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
     }
 
     def makeMove(moveCarrier: MoveCarrier): Either[ MoveResponse,GameResponse ] = {
-        try {
-            if (currentGame.isInstanceOf[ Game ] equals false) throw new GameNotCreatedYet("Game is not created, " +
-              "create a game.")
-            if (currentGame.stateOfGame == GameState.WON) {
-                Logger.info(s"Game Won with ${currentGame.userPoint} points.")
-                throw new MoveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
-                  s"to continue.")
+        if (moveCarrier.giveUp.isDefined) {
+            currentGame.gameState = GameState.LOST
+            Right(GameResponse("You gave up.",GameState.LOST.toString))
+        } else {
+            try {
+                if (currentGame.isInstanceOf[ Game ] equals false) throw new GameNotCreatedYet("Game is not created, " +
+                  "create a game.")
+                if (currentGame.stateOfGame == GameState.WON) {
+                    Logger.info(s"Game Won with ${currentGame.userPoint} points.")
+                    throw new MoveForFinishedGame(s"You Won with ${currentGame.userPoint} points. Create new game " +
+                      s"to continue.")
+                }
+                else if (currentGame.stateOfGame == GameState.LOST) {
+                    Logger.info("Game Lost.")
+                    throw new MoveForFinishedGame("You Lost. Create new game to continue.")
+                }
+                else {
+                    currentGame.makeAMove(
+                        moveCarrier.getAsChar,
+                        cardService.getOneCard(moveCarrier.selectedCard),
+                        moveCarrier.pos)
+                    if (currentGame.gameState != GameState.CONTINUE)
+                        Right(gameResponse())
+                    else Left(moveResponse())
+                }
             }
-            else if (currentGame.stateOfGame == GameState.LOST) {
-                Logger.info("Game Lost.")
-                throw new MoveForFinishedGame("You Lost. Create new game to continue.")
+            catch {
+                case exc: Exception =>
+                    Logger.error(s"Exception occurred.${exc.toString}")
+                    throw exc
+                case x: Throwable =>
+                    Logger.error(s"Error occurred: ${x.toString}")
+                    throw new Error(s"Error : ${x.toString}")
+
             }
-            else {
-                currentGame.makeAMove(
-                    moveCarrier.getAsChar,
-                    cardService.getOneCard(moveCarrier.selectedCard),
-                    moveCarrier.pos)
-                if (currentGame.gameState != GameState.CONTINUE)
-                    Right(gameResponse())
-                else Left(moveResponse())
-            }
-        }
-        catch {
-            case exc: Exception =>
-                Logger.error(s"Exception occurred.${exc.toString}")
-                throw exc
-            case x: Throwable =>
-                Logger.error(s"Error occurred: ${x.toString}")
-                throw new Error(s"Error : ${x.toString}")
 
         }
     }

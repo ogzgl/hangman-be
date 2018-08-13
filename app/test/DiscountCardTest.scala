@@ -3,18 +3,11 @@ package test
 import models.Enums.{CardType,GameState}
 import models.{Game,Word}
 import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
 class DiscountCardTest extends HangmanTestBuilder {
-    def sendPost(json: String): Future[ Result ] = {
-        val moveRequest = FakeRequest(POST,"/play")
-          .withHeaders("Content-Type" -> "application/json")
-          .withBody(json)
-        route(app,moveRequest).get
-    }
     gameService.createTestableGame(new Game(
         new Word("deneme","kategori"),
         cardService.getCards,

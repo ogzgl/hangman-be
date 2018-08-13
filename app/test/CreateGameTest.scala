@@ -7,7 +7,7 @@ import play.api.test._
 import scala.concurrent.Future
 
 class CreateGameTest extends HangmanTestBuilder {
-    def sendPost(json: String): Future[ Result ] = {
+    override def sendPost(json: String): Future[ Result ] = {
         val moveRequest = FakeRequest(POST,"/")
           .withHeaders("Content-Type" -> "application/json")
           .withBody(json)

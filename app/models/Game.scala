@@ -11,7 +11,7 @@ import scala.collection.{immutable,mutable}
 class Game(
             var word: Word,
             currentCardsParam: immutable.HashMap[ CardType,Cards ],
-            alphabetCost: immutable.HashMap[ Char,Int ],
+            alphabetCost: mutable.HashMap[ Char,Int ],
             var userPoint: Int = 100,
             var gameState : Enums.GameState.Value
           ) {

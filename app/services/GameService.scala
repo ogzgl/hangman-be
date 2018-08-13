@@ -7,7 +7,7 @@ import models.Enums.GameState
 import models.{Enums, Game}
 import play.api.{Configuration,Logger}
 
-import scala.collection.immutable
+import scala.collection.mutable
 
 @Singleton
 class GameService @Inject()(cardService: CardService,wordService: WordService,configuration: Configuration) {
@@ -53,11 +53,12 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
         }
     }
 
-    def buildAlphabetCost: immutable.HashMap[ Char,Int ] = {
-        val alphabetCost: immutable.HashMap[ Char,Int ] = immutable.HashMap[ Char,Int ]('e' -> 20,'a' -> 18,
-            'r' -> 16,'i' -> 16,'o' -> 15,'t' -> 15,'n' -> 15,'s' -> 14,'l' -> 13,'c' -> 12,'u' -> 11,'d' -> 10,
-            'p' -> 10,'m' -> 10,'h' -> 10,'g' -> 9,'b' -> 8,'f' -> 8,'w' -> 6,'y' -> 8,'k' -> 6,'v' -> 6,'x' -> 5,
-            'z' -> 5,'j' -> 5,'q' -> 5)
+    def buildAlphabetCost: mutable.HashMap[ Char,Int ] = {
+        val alphabetCost: mutable.HashMap[ Char,Int ] = mutable.HashMap[ Char,Int ]()
+        val keys = configuration.underlying.getObject("alphabetCost").keySet().toArray()
+        for (elem <- keys) {
+            alphabetCost.put(elem.toString.charAt(0),configuration.underlying.getInt(s"alphabetCost.$elem"))
+        }
         alphabetCost
     }
 

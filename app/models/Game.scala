@@ -22,8 +22,9 @@ class Game(
     var remainingLetters: mutable.HashSet[ Char ] = mutable.HashSet[ Char ]()
 
     //creates  a mutable hash map from the alphabetCost
-    createUsableAlphabetCost(currentCardsParam)
-    def createUsableAlphabetCost(ac : immutable.HashMap[ CardType,Cards ]): Unit = {
+    createUsableCards(currentCardsParam)
+
+    def createUsableCards(ac: immutable.HashMap[ CardType,Cards ]): Unit = {
         for(elem <- ac){
             currentCards.put(elem._1,elem._2.usageLimit)
         }

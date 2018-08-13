@@ -78,4 +78,5 @@ class BuyLetterCardTest extends HangmanTestBuilder {
             beforeUserPoint must equal(afterUsagePoint)
         }
     }
+    clearGame()
 }

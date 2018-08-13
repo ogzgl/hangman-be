@@ -66,4 +66,5 @@ class MakeGuessTest extends HangmanTestBuilder {
             tempHidden.diff(realHiddenWord.toString()).length mustNot equal(0)
         }
     }
+    clearGame()
 }

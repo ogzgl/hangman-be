@@ -44,4 +44,5 @@ class GameEndingTest extends HangmanTestBuilder {
             contentAsString(moveResponse) must include("lost")
         }
     }
+    clearGame()
 }

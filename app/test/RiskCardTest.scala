@@ -150,5 +150,5 @@ class RiskCardTest extends HangmanTestBuilder {
             contentAsString(moveResponse) must include("There is enabled")
         }
     }
-
+    clearGame()
 }

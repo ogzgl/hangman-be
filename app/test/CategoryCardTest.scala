@@ -60,4 +60,5 @@ class CategoryCardTest extends HangmanTestBuilder {
             afterUserPoint must equal(beforeUserPoint)
         }
     }
+    clearGame()
 }

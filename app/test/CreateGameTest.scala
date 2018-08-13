@@ -31,4 +31,5 @@ class CreateGameTest extends HangmanTestBuilder {
             contentAsString(creationResponse) must include("userPoint")
         }
     }
+    clearGame()
 }

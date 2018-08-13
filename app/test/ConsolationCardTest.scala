@@ -122,4 +122,5 @@ class ConsolationCardTest extends HangmanTestBuilder {
             afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabetCost.c"))
         }
     }
+    clearGame()
 }

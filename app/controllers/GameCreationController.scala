@@ -12,8 +12,8 @@ import services.GameService
 
 
 @Singleton
-class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService, config: Configuration) extends AbstractController(cc) {
-    def greeting = Action {
+class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
+    def conf = Action {
         val cfgAlphabet = ConfigFactory.load("application.conf").getConfig("alphabet")
         val jsValueAlphabet = Json.parse(cfgAlphabet.root().render(ConfigRenderOptions.concise()))
 

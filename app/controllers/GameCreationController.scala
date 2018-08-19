@@ -13,16 +13,16 @@ import services.GameService
 
 @Singleton
 class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
-    def conf = Action {
+    def entryConf = Action {
         val cfgAlphabet = ConfigFactory.load("application.conf").getConfig("alphabet")
         val jsValueAlphabet = Json.parse(cfgAlphabet.root().render(ConfigRenderOptions.concise()))
 
         val cfgCards = ConfigFactory.load("application.conf").getConfig("cards")
         val jsValueCards = Json.parse(cfgCards.root().render(ConfigRenderOptions.concise()))
 
-        val resultJson = Seq(jsValueAlphabet,jsValueCards)
+        val resultConfig = Seq(jsValueAlphabet,jsValueCards)
 
-        Ok(resultJson.foldLeft(Json.obj())((obj, a) => obj.deepMerge(a.as[JsObject])))
+        Ok(resultConfig.foldLeft(Json.obj())((obj, a) => obj.deepMerge(a.as[JsObject])))
     }
 
     implicit val levelReads: Reads[ LevelOfGame ] = (JsPath \ "level").read[ String ].map(LevelOfGame.apply)

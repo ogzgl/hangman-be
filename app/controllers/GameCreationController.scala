@@ -4,10 +4,9 @@ import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import customexceptions.InvalidInput
 import javax.inject._
 import jsonhandlers.{LevelOfGame, MoveResponse}
-import play.api.Logger
-import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc._
+import play.api.{Configuration, Logger}
 import services.GameService
 
 
@@ -42,7 +41,7 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
                     Ok(Json.obj("status" -> "OK","message" -> Json.toJson(creationResponse)))
                 }catch{
                     case exception: InvalidInput => PreconditionFailed(Json.obj
-                    ("status" -> "Waiting to create game",
+                    ("status" -> "KO",
                     "message" -> Json.toJson(exception.getMessage)))
                     case _ : Throwable => InternalServerError(Json.obj
                     ("status" -> "KO",

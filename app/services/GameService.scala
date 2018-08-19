@@ -55,9 +55,9 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
 
     def buildAlphabetCost: mutable.HashMap[ Char,Int ] = {
         val alphabetCost: mutable.HashMap[ Char,Int ] = mutable.HashMap[ Char,Int ]()
-        val keys = configuration.underlying.getObject("alphabetCost").keySet().toArray()
+        val keys = configuration.underlying.getObject("alphabet.alphabetCost").keySet().toArray()
         for (elem <- keys) {
-            alphabetCost.put(elem.toString.charAt(0),configuration.underlying.getInt(s"alphabetCost.$elem"))
+            alphabetCost.put(elem.toString.charAt(0),configuration.underlying.getInt(s"alphabet.alphabetCost.$elem"))
         }
         alphabetCost
     }

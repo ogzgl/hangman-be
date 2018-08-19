@@ -1,5 +1,6 @@
 package jsonhandlers
 
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -7,6 +8,7 @@ import play.api.libs.json._
 * This file holds the necessary case classes for json operations in controller.
 * */
 case class LevelOfGame(level: String)
+
 
 case class MoveResponse(userPoint: Int,
                         hiddenWord: String,

@@ -17,12 +17,12 @@ trait Cards {
 }
 
 case class BuyLetter @Inject()(configuration: Configuration) extends Cards {
-    override val cost: Int = configuration.underlying.getInt("buyletter.cost")
+    override val cost: Int = configuration.underlying.getInt("cards.buyletter.cost")
     override val cardType: CardType = CardType.BUYLETTER
-    override val description: String = configuration.underlying.getString("buyletter.description")
-    override val lowerLimit: Int = configuration.underlying.getInt("buyletter.lowerLimit")
-    override val upperLimit: Int = configuration.underlying.getInt("buyletter.upperLimit")
-    override var usageLimit: Int = configuration.underlying.getInt("buyletter.usageLimit")
+    override val description: String = configuration.underlying.getString("cards.buyletter.description")
+    override val lowerLimit: Int = configuration.underlying.getInt("cards.buyletter.lowerLimit")
+    override val upperLimit: Int = configuration.underlying.getInt("cards.buyletter.upperLimit")
+    override var usageLimit: Int = configuration.underlying.getInt("cards.buyletter.usageLimit")
 
     override def isCardAffordable(userPoints: Int): Boolean = {
         if (userPoints >= lowerLimit && userPoints <= upperLimit) true
@@ -30,12 +30,12 @@ case class BuyLetter @Inject()(configuration: Configuration) extends Cards {
 }
 
 case class RevealCategory @Inject()(configuration: Configuration) extends Cards {
-    override val cost: Int = configuration.underlying.getInt("revealcategory.cost")
+    override val cost: Int = configuration.underlying.getInt("cards.revealcategory.cost")
     override val cardType: CardType = CardType.REVEALCATEGORY
-    override val description: String = configuration.underlying.getString("revealcategory.description")
-    override val lowerLimit: Int = configuration.underlying.getInt("revealcategory.lowerLimit")
-    override val upperLimit: Int = configuration.underlying.getInt("revealcategory.upperLimit")
-    override var usageLimit: Int = configuration.underlying.getInt("revealcategory.usageLimit")
+    override val description: String = configuration.underlying.getString("cards.revealcategory.description")
+    override val lowerLimit: Int = configuration.underlying.getInt("cards.revealcategory.lowerLimit")
+    override val upperLimit: Int = configuration.underlying.getInt("cards.revealcategory.upperLimit")
+    override var usageLimit: Int = configuration.underlying.getInt("cards.revealcategory.usageLimit")
 
     override def isCardAffordable(userPoints: Int): Boolean = {
         if (userPoints >= lowerLimit && userPoints <= upperLimit) true
@@ -43,12 +43,12 @@ case class RevealCategory @Inject()(configuration: Configuration) extends Cards 
 }
 
 case class Risk @Inject()(configuration: Configuration) extends Cards {
-    override val cost: Int = configuration.underlying.getInt("risk.cost")
+    override val cost: Int = configuration.underlying.getInt("cards.risk.cost")
     override val cardType: CardType = CardType.RISK
-    override val description: String = configuration.underlying.getString("risk.description")
-    override val lowerLimit: Int = configuration.underlying.getInt("risk.lowerLimit")
-    override val upperLimit: Int = configuration.underlying.getInt("risk.upperLimit")
-    override var usageLimit: Int = configuration.underlying.getInt("risk.usageLimit")
+    override val description: String = configuration.underlying.getString("cards.risk.description")
+    override val lowerLimit: Int = configuration.underlying.getInt("cards.risk.lowerLimit")
+    override val upperLimit: Int = configuration.underlying.getInt("cards.risk.upperLimit")
+    override var usageLimit: Int = configuration.underlying.getInt("cards.risk.usageLimit")
 
     override def isCardAffordable(userPoints: Int): Boolean = {
         if (userPoints >= lowerLimit && userPoints <= upperLimit) true
@@ -57,12 +57,12 @@ case class Risk @Inject()(configuration: Configuration) extends Cards {
 }
 
 case class Consolation @Inject()(configuration: Configuration) extends Cards {
-    override val cost: Int = configuration.underlying.getInt("consolation.cost")
+    override val cost: Int = configuration.underlying.getInt("cards.consolation.cost")
     override val cardType: CardType = CardType.CONSOLATION
-    override val description: String = configuration.underlying.getString("consolation.description")
-    override val lowerLimit: Int = configuration.underlying.getInt("consolation.lowerLimit")
-    override val upperLimit: Int = configuration.underlying.getInt("consolation.upperLimit")
-    override var usageLimit: Int = configuration.underlying.getInt("consolation.usageLimit")
+    override val description: String = configuration.underlying.getString("cards.consolation.description")
+    override val lowerLimit: Int = configuration.underlying.getInt("cards.consolation.lowerLimit")
+    override val upperLimit: Int = configuration.underlying.getInt("cards.consolation.upperLimit")
+    override var usageLimit: Int = configuration.underlying.getInt("cards.consolation.usageLimit")
 
     override def isCardAffordable(userPoints: Int): Boolean = {
         if (userPoints >= lowerLimit && userPoints <= upperLimit) true
@@ -70,12 +70,12 @@ case class Consolation @Inject()(configuration: Configuration) extends Cards {
 }
 
 case class Discount @Inject()(configuration: Configuration) extends Cards {
-    override val cost: Int = configuration.underlying.getInt("discount.cost")
+    override val cost: Int = configuration.underlying.getInt("cards.discount.cost")
     override val cardType: CardType = CardType.DISCOUNT
-    override val description: String = configuration.underlying.getString("discount.description")
-    override val lowerLimit: Int = configuration.underlying.getInt("discount.lowerLimit")
-    override val upperLimit: Int = configuration.underlying.getInt("discount.upperLimit")
-    override var usageLimit: Int = configuration.underlying.getInt("discount.usageLimit")
+    override val description: String = configuration.underlying.getString("cards.discount.description")
+    override val lowerLimit: Int = configuration.underlying.getInt("cards.discount.lowerLimit")
+    override val upperLimit: Int = configuration.underlying.getInt("cards.discount.upperLimit")
+    override var usageLimit: Int = configuration.underlying.getInt("cards.discount.usageLimit")
 
     override def isCardAffordable(userPoints: Int): Boolean = {
         if (userPoints >= lowerLimit && userPoints <= upperLimit) true

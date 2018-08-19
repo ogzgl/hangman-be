@@ -18,7 +18,7 @@ class CreateGameTest extends HangmanTestBuilder {
             val greeting = route(app, FakeRequest(GET, "/")).get
             status(greeting) mustBe OK
             contentType(greeting) mustBe Some("application/json")
-            contentAsString(greeting) must include("Welcome to Hangman")
+            contentAsString(greeting) must include("buyletter")
         }
     }
 

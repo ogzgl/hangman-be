@@ -1,18 +1,29 @@
 package controllers
 
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import customexceptions.InvalidInput
 import javax.inject._
 import jsonhandlers.{LevelOfGame, MoveResponse}
 import play.api.Logger
+import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc._
 import services.GameService
 
 
+
 @Singleton
-class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
+class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService, config: Configuration) extends AbstractController(cc) {
     def greeting = Action {
-        Ok(Json.obj("status"->"OK", "message" -> Json.toJson("Welcome to Hangman")))
+        val cfgAlphabet = ConfigFactory.load("application.conf").getConfig("alphabet")
+        val jsValueAlphabet = Json.parse(cfgAlphabet.root().render(ConfigRenderOptions.concise()))
+
+        val cfgCards = ConfigFactory.load("application.conf").getConfig("cards")
+        val jsValueCards = Json.parse(cfgCards.root().render(ConfigRenderOptions.concise()))
+
+        val resultJson = Seq(jsValueAlphabet,jsValueCards)
+
+        Ok(resultJson.foldLeft(Json.obj())((obj, a) => obj.deepMerge(a.as[JsObject])))
     }
 
     implicit val levelReads: Reads[ LevelOfGame ] = (JsPath \ "level").read[ String ].map(LevelOfGame.apply)

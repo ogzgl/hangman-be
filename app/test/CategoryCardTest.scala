@@ -25,7 +25,7 @@ class CategoryCardTest extends HangmanTestBuilder {
             val category: String = (contentAsJson(moveResponse) \ "message" \ "category").as[ String ]
             category.contains('*') mustBe false
             val afterUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("revealcategory.cost"))
+            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("cards.revealcategory.cost"))
         }
 
         "throw an exception message if there is no quota" in {

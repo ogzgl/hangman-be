@@ -23,7 +23,7 @@ class WordRepo() {
             LevelEnum.HARD -> ArrayBuffer()
         )
         try {
-            val path = "/home/mandos/projects/hf_playhangman/app/repos/hangman_words"
+            val path = "/home/oguz/projects/hf_playhangman/app/repos/hangman_words"
             println(path)
             val filesHere = new java.io.File(path).listFiles
             for (file <- filesHere) processFile(file,words)

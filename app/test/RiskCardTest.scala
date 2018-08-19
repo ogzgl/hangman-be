@@ -48,7 +48,8 @@ class RiskCardTest extends HangmanTestBuilder {
             val moveResponse: Future[ Result ] = sendPost(json)
             val afterUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             println(contentAsString(moveResponse))
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabetCost.a") - configuration.underlying.getInt("risk.cost"))
+            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabet.alphabetCost.a")
+              - configuration.underlying.getInt("cards.risk.cost"))
             status(moveResponse) mustBe OK
 
             contentType(moveResponse) mustBe Some("application/json")
@@ -93,7 +94,7 @@ class RiskCardTest extends HangmanTestBuilder {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabetCost.c"))
+            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabet.alphabetCost.c"))
         }
     }
 
@@ -138,7 +139,7 @@ class RiskCardTest extends HangmanTestBuilder {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("risk.cost"))
+            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("cards.risk.cost"))
 
         }
 

@@ -26,7 +26,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
             val resultHiddenWord: String = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").as[ String ]
             val pointAfterUsage: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             resultHiddenWord(0) mustNot equal("*")
-            pointAfterUsage must equal(beforeUserPoint - configuration.underlying.getInt("buyletter.cost"))
+            pointAfterUsage must equal(beforeUserPoint - configuration.underlying.getInt("cards.buyletter.cost"))
         }
 
         "throw an exception message if there is no quota" in {
@@ -58,7 +58,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
             val resultHiddenWord: String = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").as[ String ]
             val afterUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             resultHiddenWord(0) mustNot equal("*")
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("buyletter.cost"))
+            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("cards.buyletter.cost"))
         }
         "forbid usage in insufficient points case" in {
             gameService.currentGame = new Game(

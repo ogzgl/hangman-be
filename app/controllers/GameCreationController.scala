@@ -19,7 +19,6 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
 
         val cfgCards = ConfigFactory.load("application.conf").getConfig("cards")
         val jsValueCards = Json.parse(cfgCards.root().render(ConfigRenderOptions.concise()))
-
         val resultConfig = Seq(jsValueAlphabet,jsValueCards)
 
         Ok(resultConfig.foldLeft(Json.obj())((obj, a) => obj.deepMerge(a.as[JsObject])))

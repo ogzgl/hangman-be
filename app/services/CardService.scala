@@ -30,8 +30,8 @@ class CardService @Inject()(
         cardName match {
             case Some("risk") => Some(risk.asInstanceOf[Risk])
             case Some("discount") => Some(discount.asInstanceOf[Discount])
-            case Some("buy") => Some(buyLetter.asInstanceOf[BuyLetter])
-            case Some("category") => Some(revealCategory.asInstanceOf[RevealCategory])
+            case Some("buyletter") => Some(buyLetter.asInstanceOf[BuyLetter])
+            case Some("revealcategory") => Some(revealCategory.asInstanceOf[RevealCategory])
             case Some("consolation") => Some(consolation.asInstanceOf[Consolation])
             case _ =>
                 if (cardName.isDefined) {

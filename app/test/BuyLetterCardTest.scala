@@ -19,7 +19,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
     "Buy letter usage quota tests" must {
         "reveal the given position if quota available" in {
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+            val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
@@ -31,7 +31,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
 
         "throw an exception message if there is no quota" in {
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 1}"""
+            val json = """{"card" : "buyletter", "pos" : 1}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
@@ -51,7 +51,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+            val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
@@ -69,7 +69,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+            val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")

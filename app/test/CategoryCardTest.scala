@@ -18,7 +18,7 @@ class CategoryCardTest extends HangmanTestBuilder {
     "Category usage quota tests" must {
         "reveal the category if quota available" in {
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+            val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
@@ -31,7 +31,7 @@ class CategoryCardTest extends HangmanTestBuilder {
         "throw an exception message if there is no quota" in {
             gameService.currentGame.currentCards(CardType.REVEALCATEGORY) = 0
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+            val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
@@ -51,7 +51,7 @@ class CategoryCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+            val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")

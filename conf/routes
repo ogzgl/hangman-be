@@ -3,9 +3,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET    /                           controllers.GameCreationController.greeting
-POST   /                           controllers.GameCreationController.createGame
+GET         /            controllers.GameCreationController.entryConf
+POST        /            controllers.GameCreationController.createGame
 
-GET    /play                       controllers.GameController.getRequestHandler
-POST   /play                       controllers.GameController.makeMove
+GET         /play        controllers.GameController.getRequestHandler
+POST        /play        controllers.GameController.makeMove
       

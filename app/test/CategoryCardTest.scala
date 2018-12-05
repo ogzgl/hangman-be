@@ -1,7 +1,7 @@
 package test
 
-import models.Enums.{CardType,GameState}
-import models.{Game,Word}
+import models.Enums.{CardType, GameState}
+import models.{Game, Word}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 
@@ -18,20 +18,20 @@ class CategoryCardTest extends HangmanTestBuilder {
     "Category usage quota tests" must {
         "reveal the category if quota available" in {
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+          val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val category: String = (contentAsJson(moveResponse) \ "message" \ "category").as[ String ]
             category.contains('*') mustBe false
             val afterUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("revealcategory.cost"))
+          afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("cards.revealcategory.cost"))
         }
 
         "throw an exception message if there is no quota" in {
             gameService.currentGame.currentCards(CardType.REVEALCATEGORY) = 0
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+          val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
@@ -51,7 +51,7 @@ class CategoryCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "category"}"""
+          val json = """{"card" : "revealcategory"}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")

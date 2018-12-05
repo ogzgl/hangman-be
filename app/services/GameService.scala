@@ -1,11 +1,11 @@
 package services
 
-import customexceptions.{GameNotCreatedYet,InvalidInput,MoveForFinishedGame}
+import customexceptions.{GameNotCreatedYet, InvalidInput, MoveForFinishedGame}
 import javax.inject._
 import jsonhandlers.{GameResponse, MoveCarrier, MoveResponse}
 import models.Enums.GameState
 import models.{Enums, Game}
-import play.api.{Configuration,Logger}
+import play.api.{Configuration, Logger}
 
 import scala.collection.mutable
 
@@ -55,9 +55,9 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
 
     def buildAlphabetCost: mutable.HashMap[ Char,Int ] = {
         val alphabetCost: mutable.HashMap[ Char,Int ] = mutable.HashMap[ Char,Int ]()
-        val keys = configuration.underlying.getObject("alphabetCost").keySet().toArray()
+        val keys = configuration.underlying.getObject("alphabet.alphabetCost").keySet().toArray()
         for (elem <- keys) {
-            alphabetCost.put(elem.toString.charAt(0),configuration.underlying.getInt(s"alphabetCost.$elem"))
+            alphabetCost.put(elem.toString.charAt(0), configuration.underlying.getInt(s"alphabet.alphabetCost.$elem"))
         }
         alphabetCost
     }
@@ -111,7 +111,8 @@ class GameService @Inject()(cardService: CardService,wordService: WordService,co
             currentGame.word.hiddenCategory,
             currentGame.gameState.toString,
             if (currentGame.moveList.last.isSuccess) "correct" else "incorrect",
-            if (lastCard._1) s"There is enabled card" else "No enabled card"
+            if (lastCard._1) s"${lastCard._2}" else "No enabled card",
+            currentGame.currentCards
         )
         currentMoveResponse
     }

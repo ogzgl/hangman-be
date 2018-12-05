@@ -1,7 +1,7 @@
 package test
 
-import models.Enums.{CardType,GameState}
-import models.{Game,Move,Word}
+import models.Enums.{CardType, GameState}
+import models.{Game, Move, Word}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 
@@ -95,7 +95,7 @@ class ConsolationCardTest extends HangmanTestBuilder {
             contentType(moveResponse) mustBe Some("application/json")
             contentAsString(moveResponse) must include("enabled card")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - (configuration.underlying.getInt("alphabetCost.w") / 2))
+          afterUserPoint must equal(beforeUserPoint - (configuration.underlying.getInt("alphabet.alphabetCost.w") / 2))
         }
     }
     "In consolation usage with correct guess point check" must {
@@ -119,7 +119,7 @@ class ConsolationCardTest extends HangmanTestBuilder {
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val afterUserPoint: Int = gameService.currentGame.userPoint
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabetCost.c"))
+          afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("alphabet.alphabetCost.c"))
         }
     }
     clearGame()

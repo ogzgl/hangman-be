@@ -38,7 +38,7 @@ class GameController @Inject()(cc: ControllerComponents,gameService: GameService
                                 "message" -> Json.toJson(moveResponseCheck)))
                         case Right(gameResponseCheck) =>
                             Ok(Json.obj(
-                                "status" -> "OK",
+                                "status" -> "DONE",
                                 "message" -> Json.toJson(gameResponseCheck)))
                     }
                 } catch {

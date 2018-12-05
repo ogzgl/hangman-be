@@ -1,5 +1,6 @@
 package controllers
 
+import com.typesafe.config.{ConfigFactory, ConfigRenderOptions}
 import customexceptions.InvalidInput
 import javax.inject._
 import jsonhandlers.{LevelOfGame, MoveResponse}
@@ -9,10 +10,18 @@ import play.api.mvc._
 import services.GameService
 
 
+
 @Singleton
 class GameCreationController @Inject()(cc: ControllerComponents,gameService: GameService) extends AbstractController(cc) {
-    def greeting = Action {
-        Ok(Json.obj("status"->"OK", "message" -> Json.toJson("Welcome to Hangman")))
+    def entryConf = Action {
+        val cfgAlphabet = ConfigFactory.load("application.conf").getConfig("alphabet")
+        val jsValueAlphabet = Json.parse(cfgAlphabet.root().render(ConfigRenderOptions.concise()))
+
+        val cfgCards = ConfigFactory.load("application.conf").getConfig("cards")
+        val jsValueCards = Json.parse(cfgCards.root().render(ConfigRenderOptions.concise()))
+        val resultConfig = Seq(jsValueAlphabet, jsValueCards)
+
+        Ok(resultConfig.foldLeft(Json.obj())((obj, a) => obj.deepMerge(a.as[JsObject])))
     }
 
     implicit val levelReads: Reads[ LevelOfGame ] = (JsPath \ "level").read[ String ].map(LevelOfGame.apply)
@@ -31,7 +40,7 @@ class GameCreationController @Inject()(cc: ControllerComponents,gameService: Gam
                     Ok(Json.obj("status" -> "OK","message" -> Json.toJson(creationResponse)))
                 }catch{
                     case exception: InvalidInput => PreconditionFailed(Json.obj
-                    ("status" -> "Waiting to create game",
+                    ("status" -> "KO",
                     "message" -> Json.toJson(exception.getMessage)))
                     case _ : Throwable => InternalServerError(Json.obj
                     ("status" -> "KO",

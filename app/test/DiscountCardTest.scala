@@ -1,7 +1,7 @@
 package test
 
-import models.Enums.{CardType,GameState}
-import models.{Game,Word}
+import models.Enums.{CardType, GameState}
+import models.{Game, Word}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 
@@ -65,8 +65,8 @@ class DiscountCardTest extends HangmanTestBuilder {
             contentType(moveResponse) mustBe Some("application/json")
             val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             newUserPoint must equal (tempUserPoint
-              - configuration.underlying.getInt("alphabetCost.k") / 4
-              - configuration.underlying.getInt("discount.cost"))
+              - configuration.underlying.getInt("alphabet.alphabetCost.k") / 4
+              - configuration.underlying.getInt("cards.discount.cost"))
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
             tempHidden.diff(realHiddenWord.toString()).length mustBe 0
         }
@@ -84,7 +84,7 @@ class DiscountCardTest extends HangmanTestBuilder {
             contentType(moveResponse) mustBe Some("application/json")
             val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             newUserPoint must equal (tempUserPoint
-              - configuration.underlying.getInt("discount.cost"))
+              - configuration.underlying.getInt("cards.discount.cost"))
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
             tempHidden.diff(realHiddenWord.toString()).length mustBe 1
         }
@@ -102,7 +102,7 @@ class DiscountCardTest extends HangmanTestBuilder {
             contentType(moveResponse) mustBe Some("application/json")
             val newUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             newUserPoint must equal (tempUserPoint
-              - configuration.underlying.getInt("discount.cost"))
+              - configuration.underlying.getInt("cards.discount.cost"))
             val realHiddenWord = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").get
             tempHidden.diff(realHiddenWord.toString()).length mustNot equal(1)
             tempHidden.diff(realHiddenWord.toString()).length mustNot equal(0)

@@ -1,7 +1,11 @@
 package jsonhandlers
 
+import models.Enums.CardType.CardType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+
+import scala.collection.mutable
+
 
 /*
 * This file holds the necessary case classes for json operations in controller.
@@ -13,23 +17,18 @@ case class MoveResponse(userPoint: Int,
                         category: String,
                         gameState: String,
                         isSuccess: String,
-                        enabledCard: String)
+                        enabledCard: String,
+                        cards: mutable.HashMap[CardType, Int])
 
 case class GameResponse(message: String,gameState: String)
 
 
+
 object MoveResponse {
     //writes for move response, move response is for response json it holds necessary information.
-    implicit val moveWrites: Writes[ MoveResponse ] = (
-      (JsPath \ "userPoint").write[ Int ] and
-        (JsPath \ "hiddenWord").write[ String ] and
-        (JsPath \ "category").write[ String ] and
-        (JsPath \ "gameState").write[ String ] and
-        (JsPath \ "isSuccess").write[ String ] and
-        (JsPath \ "enabledCard").write[ String ]
-      ) (unlift(MoveResponse.unapply))
+    implicit val moveWrites: Writes[MoveResponse] = Json.writes[MoveResponse
+      ]
 }
-
 object GameResponse {
     //writes for game response, work at the end of the game, response json that holds necessary information.
     implicit val gameWrites: Writes[ GameResponse ] = (

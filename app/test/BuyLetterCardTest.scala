@@ -1,7 +1,7 @@
 package test
 
 import models.Enums.GameState
-import models.{Game,Word}
+import models.{Game, Word}
 import play.api.mvc.Result
 import play.api.test.Helpers._
 
@@ -19,19 +19,19 @@ class BuyLetterCardTest extends HangmanTestBuilder {
     "Buy letter usage quota tests" must {
         "reveal the given position if quota available" in {
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+          val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val resultHiddenWord: String = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").as[ String ]
             val pointAfterUsage: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             resultHiddenWord(0) mustNot equal("*")
-            pointAfterUsage must equal(beforeUserPoint - configuration.underlying.getInt("buyletter.cost"))
+          pointAfterUsage must equal(beforeUserPoint - configuration.underlying.getInt("cards.buyletter.cost"))
         }
 
         "throw an exception message if there is no quota" in {
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 1}"""
+          val json = """{"card" : "buyletter", "pos" : 1}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
@@ -51,14 +51,14 @@ class BuyLetterCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+          val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe OK
             contentType(moveResponse) mustBe Some("application/json")
             val resultHiddenWord: String = (contentAsJson(moveResponse) \ "message" \ "hiddenWord").as[ String ]
             val afterUserPoint: Int = (contentAsJson(moveResponse) \ "message" \ "userPoint").as[ Int ]
             resultHiddenWord(0) mustNot equal("*")
-            afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("buyletter.cost"))
+          afterUserPoint must equal(beforeUserPoint - configuration.underlying.getInt("cards.buyletter.cost"))
         }
         "forbid usage in insufficient points case" in {
             gameService.currentGame = new Game(
@@ -69,7 +69,7 @@ class BuyLetterCardTest extends HangmanTestBuilder {
                 GameState.CONTINUE
             )
             val beforeUserPoint: Int = gameService.currentGame.userPoint
-            val json = """{"card" : "buy", "pos" : 0}"""
+          val json = """{"card" : "buyletter", "pos" : 0}"""
             val moveResponse: Future[ Result ] = sendPost(json)
             status(moveResponse) mustBe EXPECTATION_FAILED
             contentType(moveResponse) mustBe Some("application/json")
